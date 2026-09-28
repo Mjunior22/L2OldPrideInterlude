@@ -1,0 +1,39 @@
+package luna.custom.loader;
+
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashSet;
+
+import net.sf.l2j.commons.concurrent.ThreadPool;
+
+import luna.ITimeTrigger;
+
+public class RealTimeController
+{
+	private static final HashSet<ITimeTrigger> hooks = new HashSet<>();
+	private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+	private static int timeDiffFromMachine = 0; // 1 hour = 1 * 60 * 60 * 1000
+	
+	public static void load()
+	{
+		final int schedAfter = 60000 - Calendar.getInstance().get(Calendar.SECOND) * 1000;
+		ThreadPool.scheduleAtFixedRate(() ->
+		{
+			final Date date = new Date(System.currentTimeMillis() + timeDiffFromMachine);
+			final String timeStr = sdf.format(date);
+			for (ITimeTrigger hook : hooks)
+				ThreadPool.schedule(() -> hook.notify(Calendar.getInstance().get(Calendar.DAY_OF_WEEK), timeStr), 0);
+		}, schedAfter, 60000);
+	}
+	
+	public static void registerHook(ITimeTrigger hook)
+	{
+		hooks.add(hook);
+	}
+	
+	public static void rmHook(ITimeTrigger hook)
+	{
+		hooks.remove(hook);
+	}
+}

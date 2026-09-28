@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="**/.svn/*|.svn" kind="src" path="java"/>
+	<classpathentry kind="src" path="config"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk-21.0.11">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/c3p0-0.9.5-pre5.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/commons-codec-1.11.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/commons-collections-3.2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/commons-lang-2.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/commons-lang3-3.14.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/commons-logging-1.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/core-3.5.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/dom4j-2.0.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/gson-2.10.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/httpclient-4.5.14.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/httpcore-4.4.16.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/java-sdk-1.0.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/javase-3.5.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/JDA-4.1.1_101-withDependencies.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/l2jserver.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/mail-1.4.7.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/mchange-commons-java-0.2.6.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/mmocore.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/mysql-connector-java-5.1.26.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Junior/eclipse-workspace-24/1SourcerPrideProjeto/lib/sdk-java-2.8.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,29 @@
+package net.sf.l2j.gameserver.handler.skillhandlers;
+
+import net.sf.l2j.gameserver.handler.ISkillHandler;
+import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.WorldObject;
+import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.templates.skills.L2SkillType;
+
+public class Dummy implements ISkillHandler
+{
+	private static final L2SkillType[] SKILL_IDS =
+	{
+		L2SkillType.DUMMY
+	};
+
+	@Override
+	public void useSkill(Creature activeChar, L2Skill skill, WorldObject[] targets)
+	{
+		if (!(activeChar instanceof Player))
+			return;
+	}
+
+	@Override
+	public L2SkillType[] getSkillIds()
+	{
+		return SKILL_IDS;
+	}
+}

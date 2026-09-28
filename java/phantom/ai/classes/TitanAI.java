@@ -1,0 +1,69 @@
+package phantom.ai.classes;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import phantom.FakePlayer;
+import phantom.ai.CombatAI;
+import phantom.helpers.FakeHelpers;
+import phantom.model.HealingSpell;
+import phantom.model.OffensiveSpell;
+import phantom.model.SupportSpell;
+
+public class TitanAI extends CombatAI
+{
+	public TitanAI(FakePlayer character)
+	{
+		super(character);
+	}
+
+	@Override
+	public void thinkAndAct()
+	{
+		super.thinkAndAct();
+		setBusyThinking(true);
+
+		scheduleRandomPvpDespawn();
+
+		selfSupportBuffs();
+		tryHealingSelf();
+		tryTargetRandomCreatureByTypeInRadius(FakeHelpers.getTestTargetClass(), FakeHelpers.getTestTargetRange());		
+		tryAttackingUsingFighterOffensiveSkill();
+		tryMoveToGludinIfNoTarget();
+		setBusyThinking(false);
+	}
+
+	@Override
+	protected double changeOfUsingSkill()
+	{
+		return 0.5;
+	}
+	
+	@Override
+	protected int skillDelaySeconds() 
+	{
+		return 5;
+	}
+
+	@Override
+	protected List<OffensiveSpell> getOffensiveSpells()
+	{
+		List<OffensiveSpell> _offensiveSpells = new ArrayList<>();
+		_offensiveSpells.add(new OffensiveSpell(362, 1));
+		_offensiveSpells.add(new OffensiveSpell(315, 2));
+		return _offensiveSpells; 
+	}
+
+	@Override
+	public List<SupportSpell> getSelfSupportSpells()
+	{
+		return Collections.emptyList();
+	}
+
+	@Override
+	protected List<HealingSpell> getHealingSpells()
+	{		
+		return Collections.emptyList();
+	}
+}
