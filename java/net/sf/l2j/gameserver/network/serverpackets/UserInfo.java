@@ -11,6 +11,8 @@ import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.gameserver.skills.Stats;
+
+import custom.vip.visual.VipVisual;
 import events.oldpride.HuntingGround;
 
 public class UserInfo extends L2GameServerPacket
@@ -95,7 +97,9 @@ public class UserInfo extends L2GameServerPacket
 			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_NECK));
 			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_RFINGER));
 			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_LFINGER));
-			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_HEAD));
+//			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_HEAD));
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_HEAD));   // logo após LFINGER (item id)
+
 			
 			if(_activeChar._inEventHG && HuntingGround._started)
 			{
@@ -116,10 +120,16 @@ public class UserInfo extends L2GameServerPacket
 				writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_LHAND));
 			}
 			
-			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_GLOVES));
-			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_CHEST));
-			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_LEGS));
-			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_FEET));
+//			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_GLOVES));
+//			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_CHEST));
+//			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_LEGS));
+//			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_FEET));
+			
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_GLOVES));
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_CHEST));  // troque o VipVisual que já existe, pode manter
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_LEGS));
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_FEET));
+			
 			writeD(_activeChar.getInventory().getPaperdollItemId(Inventory.PAPERDOLL_BACK));
 			
 			if(_activeChar._inEventHG && HuntingGround._started)

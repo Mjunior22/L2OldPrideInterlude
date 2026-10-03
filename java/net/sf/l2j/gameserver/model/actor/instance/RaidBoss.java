@@ -22,6 +22,7 @@ import net.sf.l2j.gameserver.network.serverpackets.PlaySound;
 import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
 import net.sf.l2j.gameserver.util.Broadcast;
 
+import custom.raidlist.RaidRotationManager;
 import events.dailytasks.DailyTaskManager;
 
 /**
@@ -60,6 +61,8 @@ public class RaidBoss extends Monster
 	{
 		if (!super.doDie(killer))
 			return false;
+		
+		RaidRotationManager.getInstance().onBossDeath(this);
 
 		if (_maintenanceTask != null)
 		{

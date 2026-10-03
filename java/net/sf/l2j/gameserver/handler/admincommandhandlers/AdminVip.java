@@ -193,6 +193,7 @@ public class AdminVip implements IAdminCommandHandler
 	{
 		_player.setVip(false);
 		_player.setVipEndTime(0);
+		_player.broadcastUserInfo();
 		
 		Connection connection = null;
 		

@@ -497,6 +497,7 @@ public class EnterWorld extends L2GameClientPacket
 		if (curDay > endDay)
 		{
 			activeChar.setVip(false);
+			activeChar.broadcastUserInfo();
 			activeChar.setVipEndTime(0);
 			activeChar.sendMessage("[Vip System]: Removed your Vip stats... period ends ");
 		}

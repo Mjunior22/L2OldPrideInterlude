@@ -9,6 +9,8 @@ import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.skills.AbnormalEffect;
+
+import custom.vip.visual.VipVisual;
 import events.oldpride.CTF;
 import events.oldpride.DM;
 import events.oldpride.Domination;
@@ -62,7 +64,9 @@ public class CharInfo extends L2GameServerPacket
 		if(!_activeChar.isDressMeEnabled())
 		{
 			writeD(_activeChar.isInGludin() ? 0 : _inv.getPaperdollItemId(Inventory.PAPERDOLL_HAIRALL));
-			writeD(_activeChar.isInGludin() ? 0 : _inv.getPaperdollItemId(Inventory.PAPERDOLL_HEAD));
+			// HEAD
+			writeD(_activeChar.isInGludin() ? 0 : VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_HEAD));
+
 			
 			if (_activeChar._inEventHG && HuntingGround._started)
 			{
@@ -83,10 +87,24 @@ public class CharInfo extends L2GameServerPacket
 				writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_LHAND));
 			}
 			
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_GLOVES));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_CHEST));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_LEGS));
-			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_FEET));
+//			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_GLOVES));
+//			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_CHEST));
+//			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_LEGS));
+//			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_FEET));
+			
+			
+			// GLOVES
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_GLOVES));
+
+			// CHEST
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_CHEST));
+						
+			// LEGS
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_LEGS));
+
+			// FEET
+			writeD(VipVisual.getPaperdollItemId(_activeChar, Inventory.PAPERDOLL_FEET));
+			
 			writeD(_inv.getPaperdollItemId(Inventory.PAPERDOLL_BACK));
 			
 			if (_activeChar._inEventHG && HuntingGround._started)

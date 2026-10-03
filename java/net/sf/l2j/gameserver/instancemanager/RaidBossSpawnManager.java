@@ -399,6 +399,12 @@ public class RaidBossSpawnManager
 		_storedInfo.clear();
 		_spawns.clear();
 	}
+	
+	public long getRespawnTime(int bossId)
+	{
+		final StatsSet info = _storedInfo.get(bossId);
+		return (info == null) ? 0 : info.getLong("respawnTime");
+	}
 
 	private static class SingletonHolder
 	{
