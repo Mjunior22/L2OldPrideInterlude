@@ -10,6 +10,7 @@ import net.sf.l2j.gameserver.model.itemcontainer.Inventory;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.skills.AbnormalEffect;
 
+import custom.rankicon.RankIconManager;
 import custom.vip.visual.VipVisual;
 import events.oldpride.CTF;
 import events.oldpride.DM;
@@ -205,7 +206,7 @@ public class CharInfo extends L2GameServerPacket
 		writeD(_activeChar.getAppearance().getHairColor());
 		writeD(_activeChar.getAppearance().getFace());
 		
-		writeS((_activeChar.isInOlympiadMode() || _activeChar.isDisguised()) ? "" : _activeChar.getTitle());
+		writeS((_activeChar.isInOlympiadMode() || _activeChar.isDisguised()) ? "" : RankIconManager.getInstance().decorate(_activeChar, _activeChar.getTitle()));
 		
 		if (((TvT.is_started() || TvT.is_teleport()) && _activeChar._inEventTvT) || ((CTF.is_started() || CTF.is_teleport()) && _activeChar._inEventCTF) 
 			|| ((HuntingGround.is_started() || HuntingGround.is_teleport()) && _activeChar._inEventHG) || ((Domination.is_started() || Domination.is_teleport()) && _activeChar._inEventDomi)

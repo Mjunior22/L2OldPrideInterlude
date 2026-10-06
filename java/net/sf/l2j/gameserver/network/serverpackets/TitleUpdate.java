@@ -1,6 +1,9 @@
 package net.sf.l2j.gameserver.network.serverpackets;
 
 import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+
+import custom.rankicon.RankIconManager;
 
 /**
  * @author devScarlet
@@ -13,7 +16,7 @@ public class TitleUpdate extends L2GameServerPacket
 	public TitleUpdate(Creature cha)
 	{
 		_objectId = cha.getObjectId();
-		_title = cha.getTitle();
+		_title = (cha instanceof Player) ? RankIconManager.getInstance().decorate((Player) cha, cha.getTitle()) : cha.getTitle();
 	}
 
 	@Override

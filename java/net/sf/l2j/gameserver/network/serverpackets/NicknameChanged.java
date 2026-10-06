@@ -16,6 +16,8 @@ package net.sf.l2j.gameserver.network.serverpackets;
 
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 
+import custom.rankicon.RankIconManager;
+
 /**
  * @author devScarlet
  */
@@ -28,7 +30,7 @@ public class NicknameChanged extends L2GameServerPacket
 	public NicknameChanged(Player cha)
 	{
 		_objectId = cha.getObjectId();
-		_title = cha.getAppearance().getVisibleTitle();
+		_title = cha.isInOlympiadMode() ? cha.getAppearance().getVisibleTitle() : RankIconManager.getInstance().decorate(cha, cha.getAppearance().getVisibleTitle());
 	}
 	
 	/**

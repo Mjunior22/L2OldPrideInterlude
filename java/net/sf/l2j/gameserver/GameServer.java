@@ -115,6 +115,7 @@ import net.sf.l2j.util.IPv4Filter;
 import custom.pix.DonationManager;
 import custom.pix.DonationTaskManager;
 import custom.raidlist.RaidRotationManager;
+import custom.rankicon.RankIconManager;
 import events.manager.oldpride.CTFEventManager;
 import events.manager.oldpride.DMEventManager;
 import events.manager.oldpride.DomiEventManager;
@@ -226,6 +227,7 @@ public class GameServer
 		PartyMatchRoomList.getInstance();
 		RaidBossPointsManager.getInstance();
 		RaidRotationManager.getInstance().load();
+		RankIconManager.getInstance().start();
 		
 		StringUtil.printSection("Community server");
 		if (Config.ENABLE_COMMUNITY_BOARD) // Forums has to be loaded before clan data

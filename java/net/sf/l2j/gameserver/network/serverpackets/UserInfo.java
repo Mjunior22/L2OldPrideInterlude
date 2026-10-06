@@ -12,6 +12,7 @@ import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.gameserver.skills.Stats;
 
+import custom.rankicon.RankIconManager;
 import custom.vip.visual.VipVisual;
 import events.oldpride.HuntingGround;
 
@@ -273,16 +274,21 @@ public class UserInfo extends L2GameServerPacket
 		writeD(_activeChar.isGM() ? 1 : 0); // builder level
 		
 		String title = _activeChar.getTitle();
+		boolean showRankIcons = true;
 		
 		if (_activeChar.calcStat(Stats.PHAZE_MOVEMENT, 0, null, null) > 0)
 		{
+			showRankIcons = false;
 			if (!_activeChar.isVisible())
 				title = "Invisible Shifting";
 			else
 				title = "Phaze Shifting";
 		}
 		else if (!_activeChar.isVisible())
+		{
+			showRankIcons = false;
 			title = "Invisible";
+		}
 		else if (_activeChar.getPolyType() != PolyType.DEFAULT)
 		{
 			NpcTemplate polyObj = NpcTable.getInstance().getTemplate(_activeChar.getPolyId());
@@ -290,7 +296,7 @@ public class UserInfo extends L2GameServerPacket
 				title += " - " + polyObj.getName();
 		}
 		
-		writeS(title);
+		writeS(showRankIcons ? RankIconManager.getInstance().decorate(_activeChar, title) : title);
 		
 		writeD(_activeChar.getClanId());
 		writeD(_activeChar.getClanCrestId());
