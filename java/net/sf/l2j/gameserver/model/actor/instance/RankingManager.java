@@ -14,7 +14,6 @@ import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
 /**
  * @author Junior
- *
  */
 public class RankingManager extends Folk implements Runnable
 {
@@ -22,6 +21,7 @@ public class RankingManager extends Folk implements Runnable
 	private StatisticInfo[] _listPvp = new StatisticInfo[20];
 	private StatisticInfo[] _listPks = new StatisticInfo[20];
 	private StatisticInfo[] _listOn = new StatisticInfo[20];
+	private StatisticInfo[] _listTasks = new StatisticInfo[20];
 	
 	public RankingManager(int objectId, NpcTemplate template)
 	{
@@ -45,6 +45,7 @@ public class RankingManager extends Folk implements Runnable
 		html.replace("%listpvp%", getListPvP());
 		html.replace("%listpk%", getListPk());
 		html.replace("%liston%", getListOn());
+		html.replace("%listtasks%", getListTasks());
 		player.sendPacket(html);
 	}
 	
@@ -109,6 +110,24 @@ public class RankingManager extends Folk implements Runnable
 			html += "<td width=20 height=18 align=center><img src=L2UI_CH3.msnicon" + (player._status ? "1" : "4") + " width=16 height=16></td>";
 			html += "<td width=156 align=left>" + player._name + "</td>";
 			html += "<td width=100 align=center>" + ConverTime(player._time) + "</td>";
+			html += "</tr></table><img src=L2UI.SquareGray width=296 height=1>";
+		}
+		return html;
+	}
+	
+	public String getListTasks()
+	{
+		String html = "";
+		for (StatisticInfo player : _listTasks)
+		{
+			if (player == null)
+				continue;
+			
+			html += "<table width=296 bgcolor=000000><tr>";
+			html += "<td width=20 align=right>" + (player._num < 10 ? "0" + player._num : player._num) + "</td>";
+			html += "<td width=20 height=18 align=center><img src=L2UI_CH3.msnicon" + (player._status ? "1" : "4") + " width=16 height=16></td>";
+			html += "<td width=156 align=left>" + player._name + "</td>";
+			html += "<td width=100 align=center>" + StringUtil.formatNumber(player._tasks) + "</td>";
 			html += "</tr></table><img src=L2UI.SquareGray width=296 height=1>";
 		}
 		return html;
@@ -208,6 +227,28 @@ public class RankingManager extends Folk implements Runnable
 		{
 			_log.warning("Error while loading top online list : " + e.getMessage());
 		}
+		
+		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+			PreparedStatement ps = con.prepareStatement(
+				"SELECT c.char_name, c.online, d.tasks_completed " +
+				"FROM daily_tasks d JOIN characters c ON c.obj_Id = d.player_id " +
+				"WHERE c.accesslevel = 0 AND c.char_name NOT LIKE '%[GM]%' AND d.tasks_completed > 0 " +
+				"ORDER BY d.tasks_completed DESC, c.char_name ASC LIMIT 20");
+			ResultSet rset = ps.executeQuery())
+		{
+			StatisticInfo[] newList = new StatisticInfo[20];
+			int i = 0;
+			while (rset.next())
+			{
+				newList[i] = new StatisticInfo(i + 1, rset.getString("char_name"), rset.getInt("tasks_completed"), rset.getBoolean("online"));
+				i++;
+			}
+			_listTasks = newList;
+		}
+		catch (SQLException e)
+		{
+			_log.warning("Error while loading top tasks list : " + e.getMessage());
+		}
 	}
 }
 
@@ -218,6 +259,7 @@ class StatisticInfo
 	public int _pvp;
 	public int _pk;
 	public int _time;
+	public int _tasks;
 	public boolean _status;
 	
 	public StatisticInfo(int num, String name, int pvp, int pk, int time, boolean status)
@@ -227,6 +269,15 @@ class StatisticInfo
 		_pvp = pvp;
 		_pk = pk;
 		_time = time;
+		_status = status;
+	}
+	
+	// Construtor do ranking de tasks
+	public StatisticInfo(int num, String name, int tasks, boolean status)
+	{
+		_num = num;
+		_name = name;
+		_tasks = tasks;
 		_status = status;
 	}
 }

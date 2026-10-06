@@ -620,18 +620,17 @@ public abstract class Item
 	
 	public String getIcon(int id)
 	{
-//		return _icon;
 		return IconsTable.getInstance().getItemIcon(id);
 	}
 	
 	public boolean isLegendaryWeapon()
 	{
-		return getItemId() > 9644 && getItemId() < 9659;
+		return getItemId() > 9644 && getItemId() < 9659 || getItemId() == 9673;
 	}
 	
 	public boolean isRelicWeapon()
 	{
-		return getItemId() > 9658 && getItemId() < 9672;
+		return getItemId() > 9658 && getItemId() < 9673 || getItemId() == 9674;
 	}
 
 	private final boolean _bindOnEquip;

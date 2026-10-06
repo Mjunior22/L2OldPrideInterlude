@@ -139,6 +139,7 @@ public class DailyTaskManager
 				data.setMonthlyProgress(monthlyProgress);
 				data.setLastReset(lastReset);
 				data.setLastMonthlyReset(lastMonthlyReset);
+				data.setTasksCompleted(rs.getInt("tasks_completed"));
 				
 				_playerTasks.put(playerId, data);
 			}
@@ -161,7 +162,8 @@ public class DailyTaskManager
 			"monthly_tasks VARCHAR(255) DEFAULT ''," +
 			"monthly_progress VARCHAR(255) DEFAULT ''," +
 			"last_reset VARCHAR(10) DEFAULT ''," +
-			"last_monthly_reset VARCHAR(10) DEFAULT ''" +
+			"last_monthly_reset VARCHAR(10) DEFAULT ''," +
+			"tasks_completed INT NOT NULL DEFAULT 0" +
 			")";
 		
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
@@ -182,7 +184,7 @@ public class DailyTaskManager
 		if (data == null)
 			return;
 		
-		String query = "REPLACE INTO daily_tasks VALUES (?, ?, ?, ?, ?, ?, ?)";
+		String query = "REPLACE INTO daily_tasks (player_id, daily_tasks, daily_progress, monthly_tasks, monthly_progress, last_reset, last_monthly_reset, tasks_completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		try (Connection con = L2DatabaseFactory.getInstance().getConnection();
 			 PreparedStatement ps = con.prepareStatement(query))
@@ -194,6 +196,7 @@ public class DailyTaskManager
 			ps.setString(5, data.getMonthlyProgress());
 			ps.setString(6, data.getLastReset());
 			ps.setString(7, data.getLastMonthlyReset());
+			ps.setInt(8, data.getTasksCompleted());
 			ps.executeUpdate();
 		}
 		catch (SQLException e)
@@ -323,9 +326,14 @@ public class DailyTaskManager
 	
 	public boolean claimReward(Player player, int taskId, String taskType)
 	{
-		PlayerTaskData data = getPlayerData(player.getObjectId());
-		return data.claimReward(player, taskId, taskType, 
-			"DAILY".equals(taskType) ? _dailyTasks.get(taskId) : _monthlyTasks.get(taskId));
+	    PlayerTaskData data = getPlayerData(player.getObjectId());
+	    boolean success = data.claimReward(player, taskId, taskType,
+	        "DAILY".equals(taskType) ? _dailyTasks.get(taskId) : _monthlyTasks.get(taskId));
+	    
+	    if (success)
+	        savePlayerData(player.getObjectId());
+	    
+	    return success;
 	}
 	
 	public void assignRandomTasks(int playerId, boolean resetMonthly)

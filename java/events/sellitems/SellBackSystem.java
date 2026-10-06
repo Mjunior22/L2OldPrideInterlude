@@ -85,147 +85,147 @@ public class SellBackSystem implements IUserCommandHandler
 	private static void initializeReturnConfigs()
 	{
 		// ========== UNIQUE WEAPONS ==========
-		RETURN_CONFIGS.put(9600, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9600, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9601, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9601, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9602, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9602, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9603, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9603, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9604, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9604, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9605, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9605, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9606, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9606, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9607, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9607, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9608, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9608, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9609, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9609, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9610, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9610, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9611, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9611, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9612, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9612, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9613, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9613, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9614, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9614, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9615, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9615, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9616, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9616, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9617, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9617, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9618, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9618, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9619, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(9619, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
 		// ========== UNIQUE ARMORS ==========
-		RETURN_CONFIGS.put(9500, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9500, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9501, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9501, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9502, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9502, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9503, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9503, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9504, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9504, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9505, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9505, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9506, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9506, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9507, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9507, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 158));
 		
-		RETURN_CONFIGS.put(9508, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9508, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1));
 		
-		RETURN_CONFIGS.put(9509, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9509, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9510, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9510, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9511, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9511, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9512, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9512, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9513, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9513, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9514, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9514, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9515, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9515, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9516, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9516, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9517, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9517, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9518, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9518, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9519, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9519, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9520, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9520, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 292));
 		
-		RETURN_CONFIGS.put(9621, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9621, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
-		RETURN_CONFIGS.put(9622, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 167));
+		RETURN_CONFIGS.put(9622, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 1166));
 		
 		// ========== ACCESSORIES ==========
-		RETURN_CONFIGS.put(8552, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8552, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(7059, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(7059, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(7060, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(7060, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(7837, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(7837, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(7839, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(7839, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(7681, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(7681, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(6845, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(6845, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(6846, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(6846, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8558, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8558, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(7680, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(7680, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(6843, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(6843, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8184, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8184, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8557, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8557, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8185, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8185, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8186, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8186, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8188, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8188, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(7683, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(7683, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(9138, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(9138, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8189, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8189, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8180, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8180, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3496, 500));
 		
-		RETURN_CONFIGS.put(8177, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8177, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 1000));
 		
-		RETURN_CONFIGS.put(8179, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8179, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 1000));
 		
-		RETURN_CONFIGS.put(8178, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 333));
+		RETURN_CONFIGS.put(8178, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 1000));
 		
-		RETURN_CONFIGS.put(5808, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(5808, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 1667));
 		
-		RETURN_CONFIGS.put(6394, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 667));
+		RETURN_CONFIGS.put(6394, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 1).addReturnItem(3496, 1667));
 		
-		RETURN_CONFIGS.put(9158, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 3).addReturnItem(3496, 667).addReturnItem(6392, 1));
+		RETURN_CONFIGS.put(9158, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 3).addReturnItem(3496, 3333).addReturnItem(6392, 1));
 		
-		RETURN_CONFIGS.put(9159, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 3).addReturnItem(3496, 667).addReturnItem(6392, 1));
+		RETURN_CONFIGS.put(9159, new ReturnItemsConfig("Returns crafting materials").addReturnItem(3487, 3).addReturnItem(3496, 3333).addReturnItem(6392, 1));
 	}
 	
 	// Método de compatibilidade

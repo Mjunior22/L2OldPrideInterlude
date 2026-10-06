@@ -13,6 +13,7 @@ public class PlayerTaskData
 	private List<Integer> _monthlyProgress;
 	private String _lastReset;
 	private String _lastMonthlyReset;
+	private int _tasksCompleted;
 	
 	public PlayerTaskData(int playerId)
 	{
@@ -96,6 +97,7 @@ public class PlayerTaskData
 		// Mark as claimed by removing from list
 		taskIds.remove(index);
 		progress.remove(index);
+		_tasksCompleted++;
 		
 		return true;
 	}
@@ -162,7 +164,7 @@ public class PlayerTaskData
 			}
 		}
 	}
-
+	
 	public String getMonthlyTaskIds()
 	{
 		StringBuilder sb = new StringBuilder();
@@ -257,5 +259,15 @@ public class PlayerTaskData
 	public List<Integer> getMonthlyProgressList()
 	{
 		return _monthlyProgress;
+	}
+	
+	public int getTasksCompleted()
+	{
+		return _tasksCompleted;
+	}
+	
+	public void setTasksCompleted(int v)
+	{
+		_tasksCompleted = v;
 	}
 }
