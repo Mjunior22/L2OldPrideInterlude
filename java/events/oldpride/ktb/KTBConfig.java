@@ -27,9 +27,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import net.sf.l2j.commons.config.ExProperties;
+import net.sf.l2j.commons.lang.StringUtil;
 
-import net.sf.l2j.gameserver.model.holder.RewardHolder;
-import net.sf.l2j.util.StringUtil;
 
 public class KTBConfig
 {
@@ -54,7 +53,6 @@ public class KTBConfig
 	public static int KTB_EVENT_RESPAWN_TELEPORT_DELAY;
 	public static int KTB_EVENT_START_LEAVE_TELEPORT_DELAY;
 	public static List<int[]> KTB_EVENT_PLAYER_COORDINATES;
-	public static List<RewardHolder> KTB_EVENT_REWARDS = new ArrayList<>();
 	public static boolean KTB_EVENT_SCROLL_ALLOWED;
 	public static boolean KTB_EVENT_POTIONS_ALLOWED;
 	public static boolean KTB_EVENT_SUMMON_BY_ITEM_ALLOWED;

@@ -74,6 +74,8 @@ import net.sf.l2j.gameserver.handler.itemhandlers.Skin48;
 import net.sf.l2j.gameserver.handler.itemhandlers.Skin49;
 import net.sf.l2j.gameserver.handler.itemhandlers.Skin5;
 import net.sf.l2j.gameserver.handler.itemhandlers.Skin50;
+import net.sf.l2j.gameserver.handler.itemhandlers.Skin51;
+import net.sf.l2j.gameserver.handler.itemhandlers.Skin52;
 import net.sf.l2j.gameserver.handler.itemhandlers.Skin6;
 import net.sf.l2j.gameserver.handler.itemhandlers.Skin7;
 import net.sf.l2j.gameserver.handler.itemhandlers.Skin8;
@@ -174,6 +176,8 @@ public class ItemHandler
 		registerItemHandler(new Skin48());
 		registerItemHandler(new Skin49());
 		registerItemHandler(new Skin50());
+		registerItemHandler(new Skin51());
+		registerItemHandler(new Skin52());
 		registerItemHandler(new VipCoin());
 	}
 

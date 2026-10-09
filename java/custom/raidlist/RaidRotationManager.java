@@ -31,7 +31,7 @@ private static final Logger _log = Logger.getLogger(RaidRotationManager.class.ge
 		25282,
 		25283,
 		25286,
-		25315,
+		25313,
 		25315,
 		25319,
 		25514,

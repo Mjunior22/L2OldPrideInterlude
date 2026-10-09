@@ -51,8 +51,14 @@ public class PlayerTaskData
 		}
 	}
 	
-	public void updateProgress(String conditionType, int amount)
+	/**
+	* @param conditionType 
+	 * @param amount 
+	 * @return true se algum progresso realmente mudou (usado para evitar gravar no banco sem necessidade).
+	*/
+	public boolean updateProgress(String conditionType, int amount)
 	{
+		boolean changed = false;
 		// Update daily tasks
 		for (int i = 0; i < _dailyTaskIds.size(); i++)
 		{
@@ -60,7 +66,12 @@ public class PlayerTaskData
 			if (task != null && task.getConditionType().equals(conditionType))
 			{
 				int current = _dailyProgress.get(i);
-				_dailyProgress.set(i, Math.min(current + amount, task.getRequiredAmount()));
+				int updated = Math.min(current + amount, task.getRequiredAmount());
+				if (updated != current)
+				{
+					_dailyProgress.set(i, updated);
+					changed = true;
+				}
 			}
 		}
 		
@@ -71,9 +82,15 @@ public class PlayerTaskData
 			if (task != null && task.getConditionType().equals(conditionType))
 			{
 				int current = _monthlyProgress.get(i);
-				_monthlyProgress.set(i, Math.min(current + amount, task.getRequiredAmount()));
+				int updated = Math.min(current + amount, task.getRequiredAmount());
+				if (updated != current)
+				{
+					_monthlyProgress.set(i, updated);
+					changed = true;
+				}
 			}
 		}
+		return changed;
 	}
 	
 	public boolean claimReward(Player player, int taskId, String taskType, DailyTask task)

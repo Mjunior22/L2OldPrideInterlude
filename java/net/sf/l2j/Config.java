@@ -94,6 +94,8 @@ public final class Config
 	// ----------------------------------------
 	
 	public static boolean BLOCK_GLUDIN_INTERACTION;
+	public static boolean ENABLE_ACHIEVEMENTS;
+	public static boolean ENABLE_DAILY_TASKS;
 	public static boolean GM_VIEW_PL_ON;
 	public static int ANNOUNCE_ID_EVENT;
 	public static boolean CHAR_TITLE;
@@ -508,6 +510,8 @@ public final class Config
 	public static int SKILL_ID_SKIN48;
 	public static int SKILL_ID_SKIN49;
 	public static int SKILL_ID_SKIN50;
+	public static int SKILL_ID_SKIN51;
+	public static int SKILL_ID_SKIN52;
 	public static boolean ALLOW_DRESS_ME_SYSTEM;
 	public static Map<String, Integer> DRESS_ME_HELMET = new HashMap<>();
 	public static Map<String, Integer> DRESS_ME_CHESTS = new HashMap<>();
@@ -564,6 +568,8 @@ public final class Config
 	public static String SKIN_NAME48;
 	public static String SKIN_NAME49;
 	public static String SKIN_NAME50;
+	public static String SKIN_NAME51;
+	public static String SKIN_NAME52;
 	public static String NAME1;
 	public static String NAME2;
 	public static String NAME3;
@@ -614,6 +620,8 @@ public final class Config
 	public static String NAME48;
 	public static String NAME49;
 	public static String NAME50;
+	public static String NAME51;
+	public static String NAME52;
 	public static boolean ALLOW_VIP_NCOLOR;
 	public static int VIP_NCOLOR;
 	public static boolean ALLOW_VIP_TCOLOR;
@@ -2330,6 +2338,8 @@ public final class Config
 		final ExProperties l2jmega = initProperties(L2OLDPRIDE_FILE);
 		
 		BLOCK_GLUDIN_INTERACTION = Boolean.parseBoolean(l2jmega.getProperty("BlockGludinInteraction", "false"));
+		ENABLE_ACHIEVEMENTS = Boolean.parseBoolean(l2jmega.getProperty("EnableAchievements", "false"));
+		ENABLE_DAILY_TASKS = Boolean.parseBoolean(l2jmega.getProperty("EnableDailyTasks", "true"));
 		GM_VIEW_PL_ON = Boolean.parseBoolean(l2jmega.getProperty("PlayersOnlineScreemMSG", "false"));
 		ANNOUNCE_ID_EVENT = Integer.parseInt(l2jmega.getProperty("AnnounceIdEvents", "3"));
 		CHAR_TITLE = Boolean.parseBoolean(l2jmega.getProperty("CharTitle", "false"));
@@ -2969,6 +2979,8 @@ public final class Config
 		SKIN_NAME48 = String.valueOf(Skins.getProperty("SkinName48", "SkinName"));
 		SKIN_NAME49 = String.valueOf(Skins.getProperty("SkinName49", "SkinName"));
 		SKIN_NAME50 = String.valueOf(Skins.getProperty("SkinName50", "SkinName"));
+		SKIN_NAME51 = String.valueOf(Skins.getProperty("SkinName51", "SkinName"));
+		SKIN_NAME52 = String.valueOf(Skins.getProperty("SkinName52", "SkinName"));
 		
 		String temp = Skins.getProperty("DressMeChests", "");
 		String[] temp2 = temp.split(";");
@@ -3058,6 +3070,8 @@ public final class Config
 		NAME48 = Skins.getProperty("NameArmor48", " Skins Dressme");
 		NAME49 = Skins.getProperty("NameArmor49", " Skins Dressme");
 		NAME50 = Skins.getProperty("NameArmor50", " Skins Dressme");
+		NAME51 = Skins.getProperty("NameArmor51", " Skins Dressme");
+		NAME52 = Skins.getProperty("NameArmor52", " Skins Dressme");
 	}
 	
 	private static final void loadRaidCustomDrop()

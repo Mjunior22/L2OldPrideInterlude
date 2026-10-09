@@ -15539,6 +15539,9 @@ public class Player extends Playable
 	@SuppressWarnings("resource")
 	public void getAchievemntData()
 	{
+		if (!Config.ENABLE_ACHIEVEMENTS)
+			return;
+		
 		Connection con = null;
 		try
 		{
@@ -15592,6 +15595,9 @@ public class Player extends Playable
 	@SuppressWarnings("resource")
 	public void saveAchievementData(int achievementID)
 	{
+		if (!Config.ENABLE_ACHIEVEMENTS)
+			return;
+		
 		try
 		{
 			Connection con = L2DatabaseFactory.getInstance().getConnection();

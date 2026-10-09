@@ -178,6 +178,7 @@ public class ClanTable
 		ClanMember leader = new ClanMember(clan, player);
 		clan.setLeader(leader);
 		leader.setPlayerInstance(player);
+		clan.changeLevel(5);
 		clan.store();
 		player.setClan(clan);
 		player.setPledgeClass(ClanMember.calculatePledgeClass(player));

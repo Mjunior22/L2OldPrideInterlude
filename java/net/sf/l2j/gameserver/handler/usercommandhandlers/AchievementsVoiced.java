@@ -2,6 +2,7 @@ package net.sf.l2j.gameserver.handler.usercommandhandlers;
 
 import java.util.StringTokenizer;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.handler.IVoicedCommandHandler;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 
@@ -41,6 +42,31 @@ public class AchievementsVoiced implements IVoicedCommandHandler
         {
             actualCommand = command.substring(0, spaceIdx);
             actualParams = command.substring(spaceIdx + 1).trim();
+        }
+        
+        // Interruptor de servidor: o cliente pode forjar estes bypasses mesmo sem o botao na tela.
+        switch (actualCommand)
+        {
+            case "ach_showMyAchievements":
+            case "ach_achievementInfo":
+            case "ach_topList":
+            case "ach_getReward":
+            case "ach_showMyStats":
+            case "ach_showHelpWindow":
+                if (!Config.ENABLE_ACHIEVEMENTS)
+                    return false;
+                break;
+
+            case "ach_showDailyTasks":
+            case "ach_showMonthlyTasks":
+            case "ach_claimDailyTaskReward":
+            case "ach_claimMonthlyTaskReward":
+                if (!Config.ENABLE_DAILY_TASKS)
+                    return false;
+                break;
+
+            default:
+                break;
         }
 
         switch (actualCommand)

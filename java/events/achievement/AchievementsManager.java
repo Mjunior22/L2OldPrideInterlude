@@ -34,6 +34,7 @@ import events.achievement.conditions.Slivers;
 import events.achievement.conditions.SubClassLevel;
 import events.achievement.conditions.Vip;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 
@@ -48,6 +49,13 @@ public class AchievementsManager
 	
 	public AchievementsManager()
 	{
+		// Sistema desligado: nao toca no banco (CREATE/ALTER TABLE) nem le o XML.
+		// A lista fica vazia, entao qualquer chamada acidental e inofensiva.
+		if (!Config.ENABLE_ACHIEVEMENTS)
+		{
+			_log.info("[AchievementsEngine] Disabled (EnableAchievements = False).");
+			return;
+		}
 		ensureTableExists(); // Adicione esta linha
 		loadAchievements();
 	}
@@ -105,7 +113,13 @@ public class AchievementsManager
 	
 	public void rewardForAchievement(int achievementID, Player player)
 	{
+		if (!Config.ENABLE_ACHIEVEMENTS)
+			return;
+		
 		Achievement achievement = _achievementList.get(achievementID);
+		
+		if (achievement == null)
+			return;
 		
 		for (int id : achievement.getRewardList().keySet())
 			player.addItem(achievement.getName(), id, achievement.getRewardList().get(id), player, true);

@@ -20,6 +20,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import net.sf.l2j.commons.concurrent.ThreadPool;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.L2DatabaseFactory;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 
@@ -45,7 +46,7 @@ public class DailyTaskManager
 	
 	private static DailyTaskManager _instance;
 	
-	public static DailyTaskManager getInstance()
+	public static synchronized DailyTaskManager getInstance()
 	{
 		if (_instance == null)
 			_instance = new DailyTaskManager();
@@ -317,15 +318,21 @@ public class DailyTaskManager
 	
 	public void updateTaskProgress(Player player, String conditionType, int amount)
 	{
-		PlayerTaskData data = getPlayerData(player.getObjectId());
-		data.updateProgress(conditionType, amount);
+		if (!Config.ENABLE_DAILY_TASKS || player == null)
+			return;
 		
-		// Salva progresso
-		savePlayerData(player.getObjectId());
+		PlayerTaskData data = getPlayerData(player.getObjectId());
+		
+		// So grava no banco se algum progresso realmente mudou (antes gravava a cada kill/drop/PvP).
+		if (data.updateProgress(conditionType, amount))
+			savePlayerData(player.getObjectId());
 	}
 	
 	public boolean claimReward(Player player, int taskId, String taskType)
 	{
+		if (!Config.ENABLE_DAILY_TASKS)
+			return false;
+		
 	    PlayerTaskData data = getPlayerData(player.getObjectId());
 	    boolean success = data.claimReward(player, taskId, taskType,
 	        "DAILY".equals(taskType) ? _dailyTasks.get(taskId) : _monthlyTasks.get(taskId));
@@ -409,7 +416,7 @@ public class DailyTaskManager
 	
 	public void handlePlayerLogin(Player player)
 	{
-	    if (player == null)
+		if (!Config.ENABLE_DAILY_TASKS || player == null)
 	        return;
 	    
 	    PlayerTaskData data = getPlayerData(player.getObjectId());

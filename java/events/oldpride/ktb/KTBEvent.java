@@ -33,7 +33,6 @@ import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
-import net.sf.l2j.gameserver.model.holder.RewardHolder;
 import net.sf.l2j.gameserver.model.olympiad.Olympiad;
 import net.sf.l2j.gameserver.network.clientpackets.Say2;
 import net.sf.l2j.gameserver.network.serverpackets.CreatureSay;
@@ -423,18 +422,12 @@ public class KTBEvent
 //				if (!(activeChar.isKTBCompleted() || activeChar.getKTBCont() >= Config.MISSION_KTB_COUNT))
 //					activeChar.setKTBCont(activeChar.getKTBCont() + 1);
 //			}
+			
+			if (activeChar.isVip())
+				activeChar.addItem("KTB Reward", 9703, 2, activeChar, true);
+			else
+				activeChar.addItem("KTB Reward", 9703, 1, activeChar, true);
 
-			for (RewardHolder reward : KTBConfig.KTB_EVENT_REWARDS)
-			{
-				if (Rnd.get(100) <= reward.getRewardChance())
-				{
-					
-					if (activeChar.isVip())
-						activeChar.addItem("KTB Reward", reward.getRewardId(), Rnd.get(reward.getRewardMin(), reward.getRewardMax()) * 2, activeChar, true);
-					else
-						activeChar.addItem("KTB Reward", reward.getRewardId(), Rnd.get(reward.getRewardMin(), reward.getRewardMax()), activeChar, true);
-				}
-			}
 
 			StatusUpdate statusUpdate = new StatusUpdate(activeChar);
 			NpcHtmlMessage npcHtmlMessage = new NpcHtmlMessage(0);
