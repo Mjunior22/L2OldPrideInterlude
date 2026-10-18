@@ -196,6 +196,10 @@ public final class ItemsOnGroundTaskManager implements Runnable
 				if (CursedWeaponManager.getInstance().isCursed(item.getItemId()))
 					continue;
 
+				// Items lying in a private instance die with it.
+				if (item.getInstanceId() != 0)
+					continue;
+
 				st.setInt(1, item.getObjectId());
 				st.setInt(2, item.getItemId());
 				st.setInt(3, item.getCount());

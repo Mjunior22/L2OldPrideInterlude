@@ -58,6 +58,7 @@ import net.sf.l2j.gameserver.handler.itemhandlers.Gem;
 import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.instancemanager.CoupleManager;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
+import net.sf.l2j.gameserver.instancemanager.InstanceManager;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns;
 import net.sf.l2j.gameserver.instancemanager.SevenSigns.CabalType;
 import net.sf.l2j.gameserver.instancemanager.SevenSignsFestival;
@@ -8320,7 +8321,20 @@ public class Player extends Playable
 	public int getEnchantEffect()
 	{
 		final ItemInstance wpn = getActiveWeaponInstance();
-		return (wpn == null) ? 0 : Math.min(127, wpn.getEnchantLevel());
+		
+		if (wpn == null)
+			return 0;
+		
+		if (isInOlympiadMode())
+			return 5;
+		
+		if (wpn.isRelic())
+			return Math.min(127, wpn.getEnchantLevel() + 8);
+		
+		if (wpn.isLegendary())
+			return Math.min(127, wpn.getEnchantLevel() + 6);
+		
+		return Math.min(127, wpn.getEnchantLevel());
 	}
 	
 	/**
@@ -9388,7 +9402,7 @@ public class Player extends Playable
 		if (getTrainedBeast() != null)
 		{
 			getTrainedBeast().getAI().stopFollow();
-			getTrainedBeast().teleToLocation(getPosition(), 0);
+			getTrainedBeast().teleToLocation(getX(), getY(), getZ(), 0, getInstanceId());
 			getTrainedBeast().getAI().startFollow(this);
 		}
 		
@@ -9397,7 +9411,7 @@ public class Player extends Playable
 		if (pet != null)
 		{
 			pet.setFollowStatus(false);
-			pet.teleToLocation(getPosition(), 0);
+			pet.teleToLocation(getX(), getY(), getZ(), 0, getInstanceId());
 			((SummonAI) pet.getAI()).setStartFollowController(true);
 			pet.setFollowStatus(true);
 		}
@@ -9566,6 +9580,10 @@ public class Player extends Playable
 	public void deleteMe()
 	{
 		cleanup();
+		
+		// A player who logs out inside an instance is stored where he came from, not inside the private area.
+		InstanceManager.getInstance().onPlayerLogout(this);
+		
 		store();
 		super.deleteMe();
 	}
@@ -10865,6 +10883,13 @@ public class Player extends Playable
 		if (summonerChar == null)
 			return false;
 		
+		// Instances are private worlds : summoning from inside one would drop the target in the normal world.
+		if (summonerChar.getInstanceId() != 0)
+		{
+			summonerChar.sendPacket(SystemMessageId.YOU_MAY_NOT_SUMMON_FROM_YOUR_CURRENT_LOCATION);
+			return false;
+		}
+		
 		if (summonerChar.isInOlympiadMode() || summonerChar.isInObserverMode() || summonerChar.isInsideZone(ZoneId.NO_SUMMON_FRIEND) || summonerChar.isMounted())
 			return false;
 		
@@ -10883,6 +10908,13 @@ public class Player extends Playable
 			return false;
 		
 		Player targetChar = (Player) target;
+		
+		// A player inside an instance can't be pulled out of it.
+		if (targetChar.getInstanceId() != 0)
+		{
+			summonerChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.S1_IN_SUMMON_BLOCKING_AREA).addCharName(targetChar));
+			return false;
+		}
 		
 		if (targetChar.isAlikeDead())
 		{

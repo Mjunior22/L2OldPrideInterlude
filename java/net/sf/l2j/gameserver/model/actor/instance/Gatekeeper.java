@@ -261,6 +261,13 @@ public final class Gatekeeper extends Folk
 		if (activeChar.isGM())
 			return true;
 		
+		// Nobody leaves a private instance (ie. a dungeon) by teleport, whatever the event or Olympiad status is.
+		if (activeChar.getInstanceId() != 0)
+		{
+			activeChar.sendMessage("You can't teleport while inside a private area.");
+			return false;
+		}
+		
 		if (activeChar.isSitting())
 		{
 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANT_MOVE_SITTING));

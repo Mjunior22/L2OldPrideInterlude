@@ -18,6 +18,13 @@ public class Escape implements IUserCommandHandler
 	@Override
 	public boolean useUserCommand(int id, Player activeChar)
 	{
+		// A private instance (ie. a dungeon) can't be left with unstuck, whatever the event or Olympiad status is.
+		if (activeChar.getInstanceId() != 0 && !activeChar.isGM())
+		{
+			activeChar.sendMessage("You can't use unstuck while inside a private area.");
+			return false;
+		}
+
 		if (activeChar.isInFunEvent() || activeChar.isCastingNow() || activeChar.isSitting() || activeChar.isMovementDisabled() || activeChar.isOutOfControl() || activeChar.isInOlympiadMode() || activeChar.isInObserverMode() || activeChar.isFestivalParticipant() || activeChar.isInJail() || ZoneManager.getInstance().getZone(activeChar, L2BossZone.class) != null)
 		{
 			activeChar.sendPacket(SystemMessageId.NO_UNSTUCK_PLEASE_SEND_PETITION);

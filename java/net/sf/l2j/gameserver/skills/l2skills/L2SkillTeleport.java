@@ -60,6 +60,13 @@ public class L2SkillTeleport extends L2Skill
 			{
 				Player targetChar = (Player) target;
 
+				// A private instance (ie. a dungeon) can't be left by a teleport skill (escape, unstuck...), whatever the event or Olympiad status is.
+				if (targetChar.getInstanceId() != 0 && !targetChar.isGM())
+				{
+					targetChar.sendMessage("You can't teleport while inside a private area.");
+					continue;
+				}
+
 				// Check invalid states.
 				if (targetChar.isFestivalParticipant() || targetChar.isInJail() || targetChar.isInDuel())
 					continue;

@@ -42,6 +42,12 @@ public class Door extends Creature implements IGeoObject
 	private boolean _open;
 	
 	@Override
+	public boolean isInstanceShared()
+	{
+		return true;
+	}
+	
+	@Override
 	public CreatureAI getAI()
 	{
 		CreatureAI ai = _ai;

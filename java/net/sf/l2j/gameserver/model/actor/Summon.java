@@ -53,6 +53,7 @@ public abstract class Summon extends Playable
 
 		_showSummonAnimation = true;
 		_owner = owner;
+		setInstanceId(owner.getInstanceId());
 	}
 
 	@Override

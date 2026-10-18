@@ -45,14 +45,14 @@ private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/
 			// Nunca confie no bypass: re-checa o estado no clique
 			if (!RaidRotationManager.getInstance().isBossAlive())
 			{
-				player.sendMessage("Nenhum boss está vivo no momento.");
+				player.sendMessage("No bosses are currently alive.");
 				showWindow(player);
 				return;
 			}
 			
 			if (player.isDead() || player.isInCombat() || player.isInOlympiadMode() || player.isInDuel())
 			{
-				player.sendMessage("Você não pode teleportar agora.");
+				player.sendMessage("You can't teleport right now.");
 				player.sendPacket(ActionFailed.STATIC_PACKET);
 				return;
 			}
@@ -95,7 +95,7 @@ private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/
 		if (!mgr.isActive())
 		{
 			final NpcHtmlMessage off = new NpcHtmlMessage(getObjectId());
-			off.setHtml("<html><body><center><font color=\"LEVEL\">Raid Boss</font><br><br><font color=\"808080\">Sistema inativo</font></center></body></html>");
+			off.setHtml("<html><body><center><font color=\"LEVEL\">Raid Boss</font><br><br><font color=\"808080\">System is down</font></center></body></html>");
 			player.sendPacket(off);
 			player.sendPacket(ActionFailed.STATIC_PACKET);
 			return;
@@ -109,7 +109,7 @@ private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/
 		sb.append("<html><body><center><font color=\"LEVEL\">Raid Boss</font></center><br>");
 		
 		// Boss atual
-		sb.append("<center>Boss atual<br1>");
+		sb.append("<center>Current boss<br1>");
 		if (aliveId != 0)
 			sb.append("<font color=\"LEVEL\">").append(getBossName(aliveId)).append("</font> - <font color=\"00FF00\">Alive</font>");
 		else
@@ -119,7 +119,7 @@ private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/
 		// Próximo boss: só aparece depois que o atual morre
 		if (aliveId == 0)
 		{
-			sb.append("<center>Próximo boss<br1><font color=\"LEVEL\">").append(nextId != 0 ? getBossName(nextId) : "-").append("</font>");
+			sb.append("<center>Next boss<br1><font color=\"LEVEL\">").append(nextId != 0 ? getBossName(nextId) : "-").append("</font>");
 			if (nextSpawn > System.currentTimeMillis())
 			{
 				synchronized (DATE_FORMAT)
@@ -128,7 +128,7 @@ private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd/MM/
 				}
 			}
 			else
-				sb.append("<br1><font color=\"FFFF00\">Nascendo...</font>");
+				sb.append("<br1><font color=\"FFFF00\">Spawning...</font>");
 			sb.append("</center><br>");
 		}
 		

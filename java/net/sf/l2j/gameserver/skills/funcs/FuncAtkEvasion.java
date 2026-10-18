@@ -51,12 +51,16 @@ public class FuncAtkEvasion extends Func
 		}
 		else if (p instanceof Summon)
 		{
-			env.addValue((p.getLevel() < 70) ? 0 : 30);
-			
-			if (((Summon) p).getName().contains("Fang of Eva")) // fang of eva
-				env.addValue(12);
-			else if (((Summon)p).getName().contains("Dark Panther")) // dark panther
-				env.addValue(11);
+		    env.addValue((p.getLevel() < 70) ? 0 : 30);
+		    
+		    final String name = p.getName();
+		    if (name != null)
+		    {
+		        if (name.contains("Fang of Eva")) // fang of eva
+		            env.addValue(12);
+		        else if (name.contains("Dark Panther")) // dark panther
+		            env.addValue(11);
+		    }
 		}
 		
 		env.setBaseValue(env.getValue());

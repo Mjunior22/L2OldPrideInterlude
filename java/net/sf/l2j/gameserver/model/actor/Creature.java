@@ -25,6 +25,7 @@ import net.sf.l2j.gameserver.handler.SkillHandler;
 import net.sf.l2j.gameserver.handler.skillhandlers.Blow;
 import net.sf.l2j.gameserver.instancemanager.CastleManager;
 import net.sf.l2j.gameserver.instancemanager.DimensionalRiftManager;
+import net.sf.l2j.gameserver.instancemanager.InstanceManager;
 import net.sf.l2j.gameserver.model.ChanceSkillList;
 import net.sf.l2j.gameserver.model.CharEffectList;
 import net.sf.l2j.gameserver.model.FusionSkill;
@@ -459,8 +460,23 @@ public abstract class Creature extends WorldObject
 	 * @param y
 	 * @param z
 	 * @param randomOffset
+	 * <BR>
+	 * A {@link Player} always goes back to the normal world (instance 0), so any regular teleport (scroll, GM, death...) naturally kicks him out of an instance. Other creatures stay in their current instance.
 	 */
 	public void teleToLocation(int x, int y, int z, int randomOffset)
+	{
+		teleToLocation(x, y, z, randomOffset, (this instanceof Player) ? 0 : getInstanceId());
+	}
+	
+	/**
+	 * Teleport this {@link Creature} to the given instance. The instance id is changed while the object is out of the world, so no known list is left inconsistent.
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param randomOffset
+	 * @param instanceId : 0 for the normal world, or the id of an instance.
+	 */
+	public void teleToLocation(int x, int y, int z, int randomOffset, int instanceId)
 	{
 		// Stop movement
 		stopMove(null);
@@ -483,8 +499,15 @@ public abstract class Creature extends WorldObject
 		// Send TeleportToLocationt to the Creature AND to all Player in the _KnownPlayers of the Creature
 		broadcastPacket(new TeleportToLocation(this, x, y, z));
 		
+		final int oldInstanceId = getInstanceId();
+		
 		// remove the object from its old location
 		decayMe();
+		
+		// Object is out of the world : changing the instance is safe here.
+		setInstanceId(instanceId);
+		if (oldInstanceId != instanceId && this instanceof Player)
+			InstanceManager.getInstance().onInstanceChanged((Player) this, oldInstanceId, instanceId);
 		
 		// Set the x,y,z position of the WorldObject and if necessary modify its _worldRegion
 		setXYZ(x, y, z);

@@ -24,6 +24,12 @@ public class StaticObject extends WorldObject
 		super(objectId);
 	}
 
+	@Override
+	public boolean isInstanceShared()
+	{
+		return true;
+	}
+
 	/**
 	 * @return the StaticObjectId.
 	 */

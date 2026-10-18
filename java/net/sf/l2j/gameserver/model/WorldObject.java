@@ -47,6 +47,9 @@ public abstract class WorldObject
 
 	private boolean _isVisible;
 
+	/** 0 = normal world. Any other value is a private instance : only objects sharing the same id can see each other. */
+	private int _instanceId = 0;
+
 	public WorldObject(int objectId)
 	{
 		_objectId = objectId;
@@ -306,6 +309,62 @@ public abstract class WorldObject
 	}
 
 	/**
+	 * @return the instance id of this object. 0 means the normal world.
+	 */
+	public final int getInstanceId()
+	{
+		return _instanceId;
+	}
+
+	/**
+	 * @param object : The {@link WorldObject} to test.
+	 * @return true if both objects live in the same world (same instance id).
+	 */
+	public final boolean isInSameInstance(WorldObject object)
+	{
+		return object != null && object._instanceId == _instanceId;
+	}
+
+	/**
+	 * @return true if this object exists once on the map and must be seen from every instance (ie. doors and static objects). Default is false.
+	 */
+	public boolean isInstanceShared()
+	{
+		return false;
+	}
+
+	/**
+	 * @param object : The other {@link WorldObject}.
+	 * @return true if both objects must know each other : they live in the same instance, or one of them is shared by every instance.
+	 */
+	private boolean canKnow(WorldObject object)
+	{
+		return object._instanceId == _instanceId || object.isInstanceShared() || isInstanceShared();
+	}
+
+	/**
+	 * Move this object to another instance. If the object is currently visible, it is removed from the world and re-added, so every known list (and every client) is refreshed. If it is not visible (ie. during a teleport), only the id changes and the next spawnMe() does the job.
+	 * @param instanceId : 0 for the normal world, or the id of an instance.
+	 */
+	public final void setInstanceId(int instanceId)
+	{
+		if (_instanceId == instanceId)
+			return;
+
+		final WorldRegion region = _region;
+		if (region == null)
+		{
+			_instanceId = instanceId;
+			return;
+		}
+
+		// Visible object : leave the world using the OLD id (so everyone who knew us forgets us), change the id, and come back using the NEW id.
+		setRegion(null);
+		_instanceId = instanceId;
+		setRegion(World.getInstance().getRegion(_position));
+	}
+
+	/**
 	 * Update current and surrounding regions, based on both current region and region setted as parameter.
 	 * @param newRegion : null to remove the object, or the new region.
 	 */
@@ -335,7 +394,7 @@ public abstract class WorldObject
 				// Update all objects.
 				for (WorldObject obj : region.getObjects())
 				{
-					if (obj == this)
+					if (obj == this || !canKnow(obj))
 						continue;
 
 					obj.removeKnownObject(this);
@@ -356,7 +415,7 @@ public abstract class WorldObject
 				// Update all objects.
 				for (WorldObject obj : region.getObjects())
 				{
-					if (obj == this)
+					if (obj == this || !canKnow(obj))
 						continue;
 
 					obj.addKnownObject(this);
@@ -407,7 +466,7 @@ public abstract class WorldObject
 		{
 			for (WorldObject obj : reg.getObjects())
 			{
-				if (obj == this || !type.isAssignableFrom(obj.getClass()))
+				if (obj == this || !canKnow(obj) || !type.isAssignableFrom(obj.getClass()))
 					continue;
 
 				result.add((A) obj);
@@ -437,7 +496,7 @@ public abstract class WorldObject
 		{
 			for (WorldObject obj : reg.getObjects())
 			{
-				if (obj == this || !type.isAssignableFrom(obj.getClass()) || !MathUtil.checkIfInRange(radius, this, obj, true))
+				if (obj == this || !canKnow(obj) || !type.isAssignableFrom(obj.getClass()) || !MathUtil.checkIfInRange(radius, this, obj, true))
 					continue;
 
 				result.add((A) obj);

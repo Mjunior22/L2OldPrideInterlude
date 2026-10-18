@@ -19,6 +19,11 @@ public class ConditionGameChance extends Condition
 	@Override
 	public boolean testImpl(Env env)
 	{
+		if (env._item != null && env._item.getItem().getWeight() < 3)
+		{
+			return Rnd.get(100) < _chance + _chance * env._item.getEnchantLevel() * 0.06;
+		}
+		
 		return Rnd.get(100) < _chance;
 	}
 	

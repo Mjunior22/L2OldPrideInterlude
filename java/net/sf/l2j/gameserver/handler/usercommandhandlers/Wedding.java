@@ -354,6 +354,11 @@ public class Wedding implements IVoicedCommandHandler
 			return false;
 		if (!activeChar.isGM())
 		{
+			if (activeChar.getInstanceId() != 0)
+			{
+				activeChar.sendMessage("You may not use this command while inside a private area.");
+				return false;
+			}
 			if (activeChar.isInFunEvent() || activeChar.isInDuel())
 			{
 				activeChar.sendMessage("You may not use this command while in an event.");
@@ -374,6 +379,11 @@ public class Wedding implements IVoicedCommandHandler
 			return false;
 		if (!activeChar.isGM())
 		{
+			if (partner.getInstanceId() != 0)
+			{
+				activeChar.sendMessage("Your partner is inside a private area.");
+				return false;
+			}
 			if (partner.isInJail())
 			{
 				activeChar.sendMessage("Your partner is in Jail.");

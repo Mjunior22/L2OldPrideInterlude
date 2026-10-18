@@ -232,6 +232,8 @@ public class MinionList
 		else
 			newY = master.getY() - newY + minRadius;
 
+		// A minion lives in the same world as its master.
+		minion.setInstanceId(master.getInstanceId());
 		minion.spawnMe(newX, newY, master.getZ());
 
 		return minion;

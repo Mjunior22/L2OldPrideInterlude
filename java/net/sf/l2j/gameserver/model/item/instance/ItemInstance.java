@@ -988,6 +988,7 @@ public final class ItemInstance extends WorldObject implements Runnable, Compara
 			}
 
 			_itm.setDropperObjectId(_dropper != null ? _dropper.getObjectId() : 0); // Set the dropper Id for the knownlist packets in sendInfo
+			_itm.setInstanceId(_dropper != null ? _dropper.getInstanceId() : 0); // Item stays in the world of its dropper
 			_itm.spawnMe(_x, _y, _z);
 
 			ItemsOnGroundTaskManager.getInstance().add(_itm, _dropper);

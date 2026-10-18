@@ -48,6 +48,19 @@ public final class L2Spawn implements Runnable
 	
 	private int _maximumCount;
 	
+	/** Instance in which the {@link Npc} is spawned. 0 = normal world. */
+	private int _instanceId = 0;
+	
+	public int getInstanceId()
+	{
+		return _instanceId;
+	}
+	
+	public void setInstanceId(int instanceId)
+	{
+		_instanceId = instanceId;
+	}
+	
 	/**
 	 * Constructor of L2Spawn.<BR>
 	 * <BR>
@@ -412,6 +425,9 @@ public final class L2Spawn implements Runnable
 		_npc.setHeading(_loc.getHeading() < 0 ? Rnd.get(65536) : _loc.getHeading());
 		
 		_lastSpawn = _npc;
+		
+		// the NPC must belong to the right instance BEFORE entering the world
+		_npc.setInstanceId(_instanceId);
 		
 		// spawn NPC on new coordinates
 		_npc.spawnMe(locx, locy, locz);

@@ -13,6 +13,10 @@ public class EffectPoint extends Npc
 	{
 		super(objectId, template);
 		_owner = owner == null ? null : owner.getActingPlayer();
+		
+		// The effect area lives in the same world as its caster.
+		if (owner != null)
+			setInstanceId(owner.getInstanceId());
 	}
 
 	@Override

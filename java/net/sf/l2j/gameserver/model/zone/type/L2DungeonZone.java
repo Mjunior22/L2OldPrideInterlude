@@ -20,6 +20,10 @@ public class L2DungeonZone extends L2SpawnZone
 	{
 		if (character instanceof Player)
 		{
+			// The zone only restricts the normal world : a player inside a private instance (ie. the Elven Ruins dungeon) is here on purpose.
+			if (character.getInstanceId() != 0)
+				return;
+			
 			if (!(GameTimeTaskManager.getInstance().isNight() && character.getActingPlayer().isGM()))
 			{
 				character.setInsideZone(ZoneId.DUNGEON, false);
@@ -79,6 +83,10 @@ public class L2DungeonZone extends L2SpawnZone
 	{
 		if (character instanceof Player)
 		{
+			// Same rule as onEnter : nothing was set for a player inside an instance, so there is nothing to undo.
+			if (character.getInstanceId() != 0)
+				return;
+			
 			character.setInsideZone(ZoneId.DUNGEON, false);
 			if (character.isGM())
 				character.sendMessage("You have left the Farm Area");

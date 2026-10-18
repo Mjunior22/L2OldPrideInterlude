@@ -152,8 +152,24 @@ public class CharSelectInfo extends L2GameServerPacket
 			writeD((slot.getAccessLevel() > -1) ? ((slot.getDeleteTimer() > 0) ? (int) ((slot.getDeleteTimer() - System.currentTimeMillis()) / 1000) : 0) : -1);
 			writeD(slot.getClassId());
 			writeD((i == _activeId) ? 0x01 : 0x00);
+			
+			int enchantLevel = slot.getEnchantEffect();
+			if (slot.getWeaponItemId() > 0)
+			{
+				final Item item = ItemTable.getInstance().getTemplate(slot.getWeaponItemId());
+				if (item != null)
+				{
+					if (item.isRelicWeapon())
+						enchantLevel += 8;
+					if (item.isLegendaryWeapon())
+						enchantLevel += 6;
+				}
+			}
+			
+			enchantLevel = Math.min(enchantLevel, 127);
 
-			writeC(Math.min(127, slot.getEnchantEffect()));
+//			writeC(Math.min(127, slot.getEnchantEffect()));
+			writeC(enchantLevel);
 			writeD(slot.getAugmentationId());
 		}
 		getClient().setCharSelectSlot(_slots);

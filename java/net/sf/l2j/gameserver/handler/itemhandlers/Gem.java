@@ -313,6 +313,13 @@ public class Gem implements IItemHandler
 		{
 			if (player != null)
 			{
+				// Nobody leaves a private instance (ie. a dungeon) with the Gem, whatever the event or Olympiad status is.
+				if (player.getInstanceId() != 0 && !player.isGM())
+				{
+					player.sendMessage("You can't teleport while inside a private area.");
+					return;
+				}
+				
 				if (player.isInFunEvent())
 				{
 					player.sendMessage("Cannot use while in an event");

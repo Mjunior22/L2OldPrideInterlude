@@ -1,0 +1,100 @@
+diff --git a/java/net/sf/l2j/gameserver/handler/itemhandlers/Gem.java b/java/net/sf/l2j/gameserver/handler/itemhandlers/Gem.java
+index 4046795..db0ac31 100644
+--- a/java/net/sf/l2j/gameserver/handler/itemhandlers/Gem.java
++++ b/java/net/sf/l2j/gameserver/handler/itemhandlers/Gem.java
+@@ -313,6 +313,13 @@ public class Gem implements IItemHandler
+ 		{
+ 			if (player != null)
+ 			{
++				// Nobody leaves a private instance (ie. a dungeon) with the Gem, whatever the event or Olympiad status is.
++				if (player.getInstanceId() != 0 && !player.isGM())
++				{
++					player.sendMessage("You can't teleport while inside a private area.");
++					return;
++				}
++				
+ 				if (player.isInFunEvent())
+ 				{
+ 					player.sendMessage("Cannot use while in an event");
+diff --git a/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Escape.java b/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Escape.java
+index 858b7d5..983e469 100644
+--- a/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Escape.java
++++ b/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Escape.java
+@@ -18,6 +18,13 @@ public class Escape implements IUserCommandHandler
+ 	@Override
+ 	public boolean useUserCommand(int id, Player activeChar)
+ 	{
++		// A private instance (ie. a dungeon) can't be left with unstuck, whatever the event or Olympiad status is.
++		if (activeChar.getInstanceId() != 0 && !activeChar.isGM())
++		{
++			activeChar.sendMessage("You can't use unstuck while inside a private area.");
++			return false;
++		}
++
+ 		if (activeChar.isInFunEvent() || activeChar.isCastingNow() || activeChar.isSitting() || activeChar.isMovementDisabled() || activeChar.isOutOfControl() || activeChar.isInOlympiadMode() || activeChar.isInObserverMode() || activeChar.isFestivalParticipant() || activeChar.isInJail() || ZoneManager.getInstance().getZone(activeChar, L2BossZone.class) != null)
+ 		{
+ 			activeChar.sendPacket(SystemMessageId.NO_UNSTUCK_PLEASE_SEND_PETITION);
+diff --git a/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Wedding.java b/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Wedding.java
+index 7e03107..6d8725f 100644
+--- a/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Wedding.java
++++ b/java/net/sf/l2j/gameserver/handler/usercommandhandlers/Wedding.java
+@@ -354,6 +354,11 @@ public class Wedding implements IVoicedCommandHandler
+ 			return false;
+ 		if (!activeChar.isGM())
+ 		{
++			if (activeChar.getInstanceId() != 0)
++			{
++				activeChar.sendMessage("You may not use this command while inside a private area.");
++				return false;
++			}
+ 			if (activeChar.isInFunEvent() || activeChar.isInDuel())
+ 			{
+ 				activeChar.sendMessage("You may not use this command while in an event.");
+@@ -374,6 +379,11 @@ public class Wedding implements IVoicedCommandHandler
+ 			return false;
+ 		if (!activeChar.isGM())
+ 		{
++			if (partner.getInstanceId() != 0)
++			{
++				activeChar.sendMessage("Your partner is inside a private area.");
++				return false;
++			}
+ 			if (partner.isInJail())
+ 			{
+ 				activeChar.sendMessage("Your partner is in Jail.");
+diff --git a/java/net/sf/l2j/gameserver/model/actor/instance/Gatekeeper.java b/java/net/sf/l2j/gameserver/model/actor/instance/Gatekeeper.java
+index b2c8fe8..d03f80d 100644
+--- a/java/net/sf/l2j/gameserver/model/actor/instance/Gatekeeper.java
++++ b/java/net/sf/l2j/gameserver/model/actor/instance/Gatekeeper.java
+@@ -261,6 +261,13 @@ public final class Gatekeeper extends Folk
+ 		if (activeChar.isGM())
+ 			return true;
+ 		
++		// Nobody leaves a private instance (ie. a dungeon) by teleport, whatever the event or Olympiad status is.
++		if (activeChar.getInstanceId() != 0)
++		{
++			activeChar.sendMessage("You can't teleport while inside a private area.");
++			return false;
++		}
++		
+ 		if (activeChar.isSitting())
+ 		{
+ 			activeChar.sendPacket(new SystemMessage(SystemMessageId.CANT_MOVE_SITTING));
+diff --git a/java/net/sf/l2j/gameserver/skills/l2skills/L2SkillTeleport.java b/java/net/sf/l2j/gameserver/skills/l2skills/L2SkillTeleport.java
+index b509bbe..b09fcf4 100644
+--- a/java/net/sf/l2j/gameserver/skills/l2skills/L2SkillTeleport.java
++++ b/java/net/sf/l2j/gameserver/skills/l2skills/L2SkillTeleport.java
+@@ -60,6 +60,13 @@ public class L2SkillTeleport extends L2Skill
+ 			{
+ 				Player targetChar = (Player) target;
+ 
++				// A private instance (ie. a dungeon) can't be left by a teleport skill (escape, unstuck...), whatever the event or Olympiad status is.
++				if (targetChar.getInstanceId() != 0 && !targetChar.isGM())
++				{
++					targetChar.sendMessage("You can't teleport while inside a private area.");
++					continue;
++				}
++
+ 				// Check invalid states.
+ 				if (targetChar.isFestivalParticipant() || targetChar.isInJail() || targetChar.isInDuel())
+ 					continue;

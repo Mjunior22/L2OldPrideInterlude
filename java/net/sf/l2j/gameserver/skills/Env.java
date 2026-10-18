@@ -14,7 +14,7 @@ public final class Env
 	public Creature _character;
 	private Cubic _cubic;
 	public Creature _target;
-	private ItemInstance _item;
+	public ItemInstance _item;
 	public L2Skill _skill;
 
 	double _value;

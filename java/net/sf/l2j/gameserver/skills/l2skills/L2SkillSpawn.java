@@ -62,6 +62,7 @@ public class L2SkillSpawn extends L2Skill
 			spawn.setLoc(x, y, caster.getZ() + 20, caster.getHeading());
 
 			spawn.setRespawnState(false);
+			spawn.setInstanceId(caster.getInstanceId());
 			Npc npc = spawn.doSpawn(_summonSpawn);
 
 			if (_despawnDelay > 0)

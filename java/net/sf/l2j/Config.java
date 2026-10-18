@@ -738,6 +738,7 @@ public final class Config
 	public static boolean HWID_ZONES_CHECK;
 	public static boolean HWID_EVENTS_CHECK;
 	public static boolean HWID_AUTOFARM_CHECK;
+	public static boolean HWID_DUNGEONS_CHECK;
 	
 	public static int MONSTER_SKILL_CHANCE;
 	public static int MONSTER_SKILL_SHORT_CHANCE;
@@ -2397,6 +2398,7 @@ public final class Config
 		HWID_ZONES_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwidzone_check", "true"));
 		HWID_EVENTS_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwidevents_check", "true"));
 		HWID_AUTOFARM_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwidautofarm_check", "true"));
+		HWID_DUNGEONS_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwiddungeon_check", "true"));
 		
 		MONSTER_SKILL_CHANCE = Integer.parseInt(l2jmega.getProperty("monster_skill_chance", "50"));
 		MONSTER_SKILL_SHORT_CHANCE = Integer.parseInt(l2jmega.getProperty("monster_skill_short_chance", "50"));
