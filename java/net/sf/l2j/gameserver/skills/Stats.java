@@ -322,6 +322,7 @@ public enum Stats
     DEMONIC_MOVEMENT("demonicMove"),
     PHAZE_MOVEMENT("phazeMove"),
     STONESKIN("stoneSkin"),
+    REFLECT_RES("reflectRes"),
 	;
 
 	public static final int NUM_STATS = values().length;

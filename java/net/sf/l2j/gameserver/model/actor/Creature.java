@@ -4901,29 +4901,6 @@ public abstract class Creature extends WorldObject
 		
 		if (!miss && damage > 0)
 		{
-			boolean isBow = (getAttackType() == WeaponType.BOW);
-			int reflectedDamage = 0;
-			
-			// Reflect damage system - do not reflect if weapon is a bow or target is invulnerable
-			if (!isBow && !target.isInvul())
-			{
-				// quick fix for no drop from raid if boss attack high-level char with damage reflection
-				if (!target.isRaid() || getActingPlayer() == null || getActingPlayer().getLevel() <= target.getLevel() + 8)
-				{
-					// Calculate reflection damage to reduce HP of attacker if necessary
-					double reflectPercent = target.getStat().calcStat(Stats.REFLECT_DAMAGE_PERCENT, 0, null, null);
-					if (reflectPercent > 0)
-					{
-						reflectedDamage = (int) (reflectPercent / 100. * damage);
-						
-						// You can't kill someone from a reflect. If value > current HPs, make damages equal to current HP - 1.
-						int currentHp = (int) getCurrentHp();
-						if (reflectedDamage >= currentHp)
-							reflectedDamage = currentHp - 1;
-					}
-				}
-			}
-			
 			// Reduce target HPs
 			if (!isDead() && !target.isDead())
 			{
@@ -4939,27 +4916,58 @@ public abstract class Creature extends WorldObject
 					target.reduceCurrentHp(damage, this, null);
 				}
 			}
+						
+			boolean reflect = Rnd.get(3) == 0;
 			
-			// Reduce attacker HPs in case of a reflect.
-			if (reflectedDamage > 0)
+			boolean isBow = (getAttackType() == WeaponType.BOW);
+			
+			if (reflect)
 			{
-				if (!isDead() && !target.isDead())
+				int reflectedDamage = 0;
+				
+				if (this instanceof Playable)
 				{
-					if (this instanceof Player)
-						getActingPlayer().getStatus().reduceHp(reflectedDamage, target, true, false, false, false);
-					else
-						reduceCurrentHp(reflectedDamage, target, true, false, null);
-					if (!isVisible())
+					// Reflect damage system - do not reflect if weapon is a bow
+					if (!isBow)
 					{
-						if (target instanceof Player)
-							((Player) target).sendMessage("You reflected " + reflectedDamage + " damage to " + getName());
-						else if (target instanceof Summon)
-							((Summon) target).getOwner().sendMessage("Summon reflected " + reflectedDamage + " damage to " + getName());
+						// quick fix for no drop from raid if boss attack high-level char with damage reflection
+						if (!target.isRaid() || getActingPlayer() == null || getActingPlayer().getLevel() <= target.getLevel() + 8)
+						{
+							// Calculate reflection damage to reduce HP of attacker if necessary
+							double reflectPercent = (target.getStat().calcStat(Stats.REFLECT_DAMAGE_PERCENT, 0, null, null)
+								- calcStat(Stats.REFLECT_RES, 0, target, null)) * 2;
+							if (reflectPercent > 0)
+							{
+								reflectedDamage = (int) (reflectPercent / 100. * damage);
+								
+								if (reflectedDamage > target.getMaxHp())
+									reflectedDamage = target.getMaxHp();
+							}
+						}
 					}
-					if (this instanceof Player)
-						((Player) this).sendMessage("Target reflected to you " + reflectedDamage + " damage");
-					else if (this instanceof Summon)
-						((Summon) this).getOwner().sendMessage("Target reflected to your summon " + reflectedDamage + " damage");
+				}
+				
+				// Reduce attacker HPs in case of a reflect.
+				if (reflectedDamage > 0)
+				{
+					if (!isDead() && !target.isDead())
+					{
+						if (this instanceof Player)
+							getActingPlayer().getStatus().reduceHp(reflectedDamage, target, true, false, false, false, true);
+						else
+							reduceCurrentHp(reflectedDamage, target, true, false, null);
+						if (!isVisible())
+						{
+							if (target instanceof Player)
+								((Player) target).sendMessage("You reflected " + reflectedDamage + " damage to " + getName());
+							else if (target instanceof Summon)
+								((Summon) target).getOwner().sendMessage("Summon reflected " + reflectedDamage + " damage to " + getName());
+						}
+						if (this instanceof Player)
+							((Player) this).sendMessage("Target reflected to you " + reflectedDamage + " damage");
+						else if (this instanceof Summon)
+							((Summon) this).getOwner().sendMessage("Target reflected to your summon " + reflectedDamage + " damage");
+					}
 				}
 			}
 			
@@ -5037,13 +5045,7 @@ public abstract class Creature extends WorldObject
 			
 			// Maybe launch chance skills on us
 			if (_chanceSkills != null)
-			{
 				_chanceSkills.onHit(target, false, crit);
-				
-				// Reflect triggers onHit
-				if (reflectedDamage > 0)
-					_chanceSkills.onHit(target, true, false);
-			}
 			
 			// Maybe launch chance skills on target
 			if (target.getChanceSkills() != null)

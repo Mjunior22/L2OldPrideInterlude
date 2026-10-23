@@ -2881,7 +2881,7 @@ public final class Formulas
 			case FATAL:
 				final Stats stat = skill.isMagic() ? Stats.VENGEANCE_SKILL_MAGIC_DAMAGE : rangedPhysicalSkill ? Stats.VENGEANCE_RANGED_SKILL_DAMAGE : Stats.VENGEANCE_SKILL_PHYSICAL_DAMAGE;
 				final double venganceChance = target.getStat().calcStat(stat, 0, target, skill);
-				if (venganceChance > Rnd.get(100))
+				if (venganceChance - (attacker != null ? attacker.calcStat(Stats.REFLECT_RES, 0, target, skill) : 0) > Rnd.get(100))
 				{
 					reflect |= SKILL_REFLECT_VENGEANCE;
 					

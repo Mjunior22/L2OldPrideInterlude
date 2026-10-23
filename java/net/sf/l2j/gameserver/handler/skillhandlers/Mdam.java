@@ -109,11 +109,20 @@ public class Mdam implements ISkillHandler
 
 				// vengeance reflected damage
 				if ((reflect & Formulas.SKILL_REFLECT_VENGEANCE) != 0)
-					activeChar.reduceCurrentHp(damage, target, skill);
-				else
 				{
-					activeChar.sendDamageMessage(target, damage, mcrit, false, false);
-					target.reduceCurrentHp(damage, activeChar, skill);
+					double reflectPercent = target.calcStat(Stats.VENGEANCE_SKILL_MAGIC_DAMAGE, -activeChar.calcStat(Stats.REFLECT_RES, 0, target, skill), activeChar, skill);
+					
+					if (reflectPercent > 100)
+					{
+						reflectPercent-=100;
+						reflectPercent/=120;
+						reflectPercent++;
+						
+						activeChar.reduceCurrentHp(damage*reflectPercent, target, skill);
+					}
+					else
+						activeChar.reduceCurrentHp(damage, target, skill);
+					
 				}
 
 				if (skill.hasEffects() && target.getFirstEffect(L2EffectType.BLOCK_DEBUFF) == null)
@@ -147,6 +156,8 @@ public class Mdam implements ISkillHandler
 						}
 					}
 				}
+				
+				activeChar.sendDamageMessage(target, damage, mcrit, false, false);
 
 				double absorb = (int) activeChar.calcStat(Stats.ABSORB_DAMAGE_PERCENT_SKILL, 0, target, skill);
 				

@@ -64,9 +64,113 @@ public class ElvenRuinsDungeon extends Quest
 	 */
 	private static final int[][] SPAWNS =
 	{
-		{40100, 47848, 248456, -6360, 0},
-		{40100, 45000, 248456, -6408, 0},
-		{40100, 43624, 248472, -6496, 0},
+		{40130, 82810, 148288, -3469, 19703},
+		{40131, 82888, 148344, -3464, 0},
+		{40132, 82936, 148472, -3464, 14103},
+		{40133, 82840, 148456, -3464, 34892},
+		{40134, 82744, 148440, -3464, 35141},
+		{40135, 82696, 148376, -3464, 42983},
+		{40136, 82696, 148280, -3464, 49495},
+		{40137, 82744, 148216, -3464, 38901},
+		{40130, 45224, 248632, -6408, 47997},
+		{40130, 44888, 248648, -6408, 47854},
+		{40130, 44872, 248264, -6408, 15172},
+		{40130, 45224, 248264, -6408, 16190},
+		{40131, 47896, 248824, -6360, 23215},
+		{40131, 47880, 249544, -6360, 40959},
+		{40131, 47336, 249592, -6360, 58498},
+		{40131, 47368, 248872, -6360, 9751},
+		{40132, 44888, 248920, -6360, 1986},
+		{40132, 44872, 249432, -6360, 63626},
+		{40132, 45656, 249384, -6360, 37742},
+		{40130, 45608, 244168, -6512, 16809},
+		{40130, 45608, 244536, -6512, 48972},
+		{40130, 45960, 244536, -6512, 48069},
+		{40130, 45960, 244168, -6512, 18442},
+		{40132, 48232, 244600, -6560, 39417},
+		{40132, 47768, 244104, -6560, 6481},
+		{40131, 48232, 244120, -6560, 24122},
+		{40131, 47800, 244568, -6560, 57625},
+		{40133, 47016, 242840, -6560, 15902},
+		{40133, 47000, 243464, -6560, 51707},
+		{40132, 47528, 243112, -6560, 31951},
+		{40132, 46440, 243160, -6560, 297},
+		{40136, 48008, 243368, -6608, 16383},
+		{40135, 45912, 242920, -6456, 32609},
+		{40135, 44904, 242920, -6456, 800},
+		{40137, 45944, 243304, -6456, 32597},
+		{40137, 44872, 243320, -6456, 237},
+		{40134, 44392, 245224, -6456, 17279},
+		{40134, 44360, 245960, -6456, 48457},
+		{40132, 44024, 246040, -6456, 48978},
+		{40132, 44024, 245208, -6456, 16109},
+		{40130, 43064, 246888, -6456, 15603},
+		{40130, 43064, 247816, -6456, 50490},
+		{40130, 42664, 247784, -6456, 49305},
+		{40130, 42664, 246904, -6456, 16621},
+		{40130, 42536, 247528, -6456, 1843},
+		{40130, 42536, 247192, -6456, 63943},
+		{40131, 43144, 247176, -6456, 35178},
+		{40131, 43144, 247512, -6456, 31175},
+		{40137, 42824, 247384, -6456, 47444},
+		{40133, 41656, 245960, -6456, 16129},
+		{40133, 41656, 246776, -6456, 49151},
+		{40135, 42872, 245112, -6456, 15650},
+		{40135, 42888, 245688, -6456, 48717},
+		{40130, 43352, 245112, -6456, 23980},
+		{40130, 43352, 245592, -6456, 42730},
+		{40130, 42456, 245592, -6456, 60813},
+		{40130, 42392, 245096, -6456, 7775},
+		{40134, 46488, 247736, -6360, 16383},
+		{40136, 48040, 246936, -6616, 32559},
+		{40137, 47544, 246584, -6616, 15603},
+		{40137, 47560, 247272, -6616, 48539},
+		{40130, 48072, 246824, -6616, 33010},
+		{40130, 48072, 247048, -6616, 32024},
+		{40132, 43416, 248568, -6496, 59764},
+		{40132, 43496, 244168, -6496, 10845},
+		{40130, 44200, 246712, -6512, 47251},
+		{40130, 44184, 246440, -6512, 18664},
+		{40131, 45064, 245656, -6608, 6737},
+		{40131, 46088, 245704, -6608, 23605},
+		{40131, 46088, 247496, -6608, 43669},
+		{40131, 45064, 247464, -6608, 56847},
+		{40133, 46232, 246888, -6608, 33346},
+		{40133, 46232, 246296, -6608, 33843},
+		{40133, 46248, 245768, -6608, 31045},
+		{40135, 45592, 246136, -6608, 16223},
+		{40135, 45608, 246920, -6608, 48145},
+		{40134, 45048, 246760, -6608, 64448},
+		{40134, 45048, 246392, -6608, 65056},
+		{40136, 48072, 245864, -6656, 32116},
+		{40131, 48184, 245512, -6656, 23007},
+		{40131, 48184, 246248, -6656, 43643},
+		{40131, 47704, 245896, -6656, 64923},
+		{40135, 47240, 246968, -6656, 43791},
+		{40137, 46744, 247048, -6656, 56765},
+		{40135, 46728, 246152, -6656, 8770},
+		{40137, 47160, 246168, -6656, 22295},
+		{40134, 46728, 246568, -6656, 64809},
+		{40134, 47256, 246632, -6656, 32271},
+		{40136, 47112, 247416, -6656, 32767},
+		{40133, 47176, 247496, -6656, 32345},
+		{40133, 47192, 247352, -6656, 31189},
+		{40131, 44648, 247960, -6408, 52997},
+		{40131, 45608, 248008, -6512, 40068},
+		{40137, 46104, 247592, -6304, 38901},
+		{40137, 46104, 245608, -6304, 22587},
+		{40137, 45080, 245576, -6304, 2505},
+		{40137, 45048, 247576, -6304, 54205},
+		{40131, 45016, 246872, -6304, 1552},
+		{40131, 45064, 246120, -6304, 743},
+		{40131, 46056, 246152, -6304, 33161},
+		{40131, 46056, 246872, -6304, 32588},
+		{40130, 45704, 247544, -6304, 48408},
+		{40130, 45432, 247544, -6304, 50553},
+		{40130, 45432, 245576, -6304, 14903},
+		{40130, 45704, 245576, -6304, 17936},
+		{40131, 44648, 245160, -6408, 7152},
+		{40132, 45592, 245144, -6504, 24228}
 	};
 
 	/** Where the players appear inside the ruins. With the zone mode, it must be inside the zone (a warning is written at startup otherwise). */
@@ -87,8 +191,9 @@ public class ElvenRuinsDungeon extends Quest
 			this.heading = heading;
 		}
 	}
-
-	private static final int MIN_LEVEL = 82;
+	
+	private static final int MIN_PVP = 100;
+	private static final int MIN_LEVEL = 84;
 	private static final int MAX_LEVEL = 91;
 	/** 1 = a lonely player can enter. */
 	private static final int MIN_MEMBERS = 1;
@@ -105,7 +210,7 @@ public class ElvenRuinsDungeon extends Quest
 	/** Respawn of the monsters inside the dungeon, in seconds. 0 = they don't respawn : killing all of them ends the dungeon. */
 	private static final int RESPAWN_SECONDS = 0;
 	/** Time before a player can open a new passage. */
-	private static final int COOLDOWN_HOURS = 6;
+	private static final int COOLDOWN_HOURS = 24;
 
 	/** Name of the player variable which stores the end of the cooldown. */
 	private static final String MEMO_KEY = "ElvenRuinsDungeon";
@@ -226,7 +331,9 @@ public class ElvenRuinsDungeon extends Quest
 		final StringBuilder sb = new StringBuilder("<html><body>Elven Ruins Guide:<br>");
 		sb.append("The ruins are crawling with creatures again. I can open a private passage for you and your party : nobody else will be able to follow you in.<br>");
 		sb.append("<font color=\"LEVEL\">Conditions</font><br1>");
-		sb.append("- Level ").append(MIN_LEVEL).append(" to ").append(MAX_LEVEL).append("<br1>");
+		sb.append("- Level: ").append(MIN_LEVEL).append(" to ").append(MAX_LEVEL).append("<br1>");
+		sb.append("- Required PvPs: ").append(MIN_PVP).append("<br1>");
+		sb.append("- Party size: ").append(MIN_MEMBERS).append(" to ").append(MAX_MEMBERS).append("<br1>");
 		sb.append("- The party leader opens the passage, every member must stand close to him<br1>");
 		sb.append("- ").append(DURATION_MINUTES).append(" minutes inside<br1>");
 		sb.append("- A new passage can be opened every ").append(COOLDOWN_HOURS).append(" hours<br>");
@@ -319,7 +426,8 @@ public class ElvenRuinsDungeon extends Quest
 		final long cooldownEnd = now + COOLDOWN_HOURS * 3600000L;
 		for (Player member : members)
 		{
-			member.getMemos().set(MEMO_KEY, cooldownEnd);
+			if (!member.isGM())
+				member.getMemos().set(MEMO_KEY, cooldownEnd);
 			member.sendMessage("The passage to the " + NAME + " is open for " + DURATION_MINUTES + " minutes.");
 			instance.enter(member, ENTRY);
 		}
@@ -338,6 +446,9 @@ public class ElvenRuinsDungeon extends Quest
 	 */
 	private static String checkMember(Player member, Player leader, long now)
 	{
+		if (member.getPvpKills() < MIN_PVP)
+			return member.getName() + "needs a least " + MIN_PVP + " PvP Kills (has " + member.getPvpKills() + ").";
+		
 		if (member.getLevel() < MIN_LEVEL || member.getLevel() > MAX_LEVEL)
 			return member.getName() + " must be between level " + MIN_LEVEL + " and " + MAX_LEVEL + ".";
 
