@@ -32,7 +32,7 @@ public class AITask implements Runnable
 		{
 			for (FakePlayer fp : fakePlayers)
 			{
-				if (fp.getFakeAi() != null && !fp.getFakeAi().isBusyThinking())
+				if (!fp.isDespawned() && fp.getFakeAi() != null && !fp.getFakeAi().isBusyThinking())
 				{
 					fp.getFakeAi().thinkAndAct();
 				}

@@ -318,11 +318,12 @@ public class DailyTaskManager
 	
 	public void updateTaskProgress(Player player, String conditionType, int amount)
 	{
-		if (!Config.ENABLE_DAILY_TASKS || player == null)
+		// Phantoms (FakePlayer) have no character row: do not create task data for them.
+		if (!Config.ENABLE_DAILY_TASKS || player == null || player.isPhantom())
 			return;
-		
+
 		PlayerTaskData data = getPlayerData(player.getObjectId());
-		
+
 		// So grava no banco se algum progresso realmente mudou (antes gravava a cada kill/drop/PvP).
 		if (data.updateProgress(conditionType, amount))
 			savePlayerData(player.getObjectId());

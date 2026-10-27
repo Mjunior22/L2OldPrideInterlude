@@ -43,6 +43,8 @@ import net.sf.l2j.gameserver.network.serverpackets.StatusUpdate;
 
 import events.oldpride.CTF;
 import phantom.FakePlayer;
+import phantom.FakePlayerConfig;
+import phantom.ai.event.KillTheBossAI;
 
 public class KTBEvent
 {
@@ -340,6 +342,10 @@ public class KTBEvent
 		setState(EventState.STARTING);
 		_log.info("KTBEventEngine[DEBUG]: state set to STARTING.");
 
+		// Top up with phantoms (only if at least one real player registered), so they count for the minimum
+		if (FakePlayerConfig.ALLOW_FAKE_PLAYER_KTB)
+			KillTheBossAI.spawnPhantoms();
+
 		// Check the number of participants
 		if (_ktbPlayer.size() < KTBConfig.KTB_EVENT_MIN_PLAYERS)
 		{
@@ -350,6 +356,7 @@ public class KTBEvent
 
 			// Cleanup of participants
 			_ktbPlayer.clear();
+			KillTheBossAI.unspawnPhantoms();
 
 			// Unspawn the event NPC
 			unSpawnNpc();
@@ -465,9 +472,12 @@ public class KTBEvent
 
 		for (KTBPlayer player : _ktbPlayer.values())
 		{
-			if (player != null)
+			// Phantoms are despawned below instead of being teleported back.
+			if (player != null && !(player.getPlayer() instanceof FakePlayer))
 				new KTBEventTeleporter(player.getPlayer(), KTBConfig.KTB_EVENT_PARTICIPATION_NPC_COORDINATES, false, false);
 		}
+
+		KillTheBossAI.unspawnPhantoms();
 
 		// Cleanup list
 		_ktbPlayer = new HashMap<>();

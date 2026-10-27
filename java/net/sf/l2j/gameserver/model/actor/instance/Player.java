@@ -248,11 +248,6 @@ import net.sf.l2j.gameserver.util.Broadcast;
 import net.sf.l2j.gameserver.util.Strings;
 import net.sf.l2j.gameserver.util.Util;
 
-import bots.oldpride.PhantomOld;
-import bots.oldpride.Phantom_CTF_Archer;
-import bots.oldpride.Phantom_PvP_Archer;
-import bots.oldpride.Phantom_PvP_Dagger;
-import bots.oldpride.Phantom_PvP_Mages;
 import custom.effectprotection.PvpProtectionManager;
 import custom.pix.DonationManager;
 import events.achievement.AchievementsManager;
@@ -3008,18 +3003,18 @@ public class Player extends Playable
 	
 	public String getAccountName()
 	{
-		if ((getClient() == null || getClient().isDetached()) && !(this instanceof PhantomOld))
+		if ((getClient() == null || getClient().isDetached()) && !(this instanceof FakePlayer))
 			return "Disconnected";
-		if (this instanceof PhantomOld)
+		if (this instanceof FakePlayer)
 			return this._accountName;
 		return _client.getAccountName();
 	}
 	
 	public String getAccountNameIgnoreDetached()
 	{
-		if ((getClient() == null || getClient().isDetached()) && !(this instanceof PhantomOld))
+		if ((getClient() == null || getClient().isDetached()) && !(this instanceof FakePlayer))
 			return "disconnected";
-		if (this instanceof PhantomOld)
+		if (this instanceof FakePlayer)
 			return this._accountName;
 		return getClient().getAccountName();
 	}
@@ -12085,7 +12080,7 @@ public class Player extends Playable
 	
 	public String getIP()
 	{
-		return (this instanceof PhantomOld) ? String.valueOf(getObjectId()) : getClient().getIP();
+		return (this instanceof FakePlayer) ? String.valueOf(getObjectId()) : getClient().getIP();
 	}
 	
 	private String _hwid = "";
@@ -12107,7 +12102,7 @@ public class Player extends Playable
 	public String gethwid()
 	{
 		// cats reflect method
-		if (this instanceof PhantomOld)
+		if (this instanceof FakePlayer)
 		{
 			return String.valueOf(Long.MAX_VALUE - getObjectId());
 		}
@@ -12121,7 +12116,7 @@ public class Player extends Playable
 	
 	public String getHWid()
 	{
-		if (this instanceof PhantomOld)
+		if (this instanceof FakePlayer)
 		{
 			return String.valueOf(Long.MAX_VALUE - getObjectId());
 		}
@@ -15173,319 +15168,6 @@ public class Player extends Playable
 			getStatus().setCurrentHp(getMaxHp());
 			getStatus().setCurrentMp(getMaxMp());
 		}
-	}
-	
-	private boolean _isAttackP = false;
-	
-	public void setAttackP(final boolean value)
-	{
-		_isAttackP = value;
-	}
-	
-	public boolean isAttackP()
-	{
-		return _isAttackP;
-	}
-	
-	public void starAttack()
-	{
-		setAttackP(false);
-		
-		if (isPhantomPvPArcher())
-		{
-			if (!isDead())
-			{
-				walkToGludinCenter();
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-			Phantom_PvP_Archer.doCastlist(this);
-		}
-		if (isPhantomPvPDagger())
-		{
-			if (!isDead())
-			{
-				if (getTarget() == this || getTarget() == null)
-				{
-					setTarget(null);
-					walkToGludinCenter();
-				}
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-			Phantom_PvP_Dagger.doCastlist(this);
-		}
-		if (isPhantomPvPSrc() || isPhantomPvPNcr() || isPhantomPvPSps() || isPhantomPvPSph())
-		{
-			if (!isDead())
-			{
-				if (getTarget() == this || getTarget() == null)
-				{
-					setTarget(null);
-					walkToGludinCenter();
-				}
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-			Phantom_PvP_Mages.doCastlist(this);
-		}
-		
-		if (isPhantomCTFArcher())
-		{
-			if (!isDead())
-			{
-				walkCTF();
-				try
-				{
-					Thread.sleep(1000);
-				}
-				catch (InterruptedException e)
-				{
-				}
-			}
-		}
-	}
-	
-	public void rndWalkMonster()
-	{
-		int x = getX();
-		int y = getY();
-		int z = getZ();
-		switch (Rnd.get(1, 9))
-		{
-			case 1:
-				x += 500;
-				y -= 60;
-				break;
-			case 2:
-				x -= 150;
-				y += 60;
-				break;
-			case 3:
-				x -= 500;
-				y -= 60;
-				break;
-			case 4:
-				x -= 50;
-				y += 150;
-				break;
-			case 6:
-				x -= 500;
-				y += 50;
-				break;
-			case 7:
-				x += 40;
-				y += 150;
-				break;
-			case 8:
-				x -= 500;
-				y -= 50;
-				break;
-			case 9:
-				x += 50;
-				y -= 150;
-				break;
-		}
-		
-		if (!isMoving())
-		{
-			if (GeoEngine.getInstance().canMoveToTarget(getX(), getY(), getZ(), x, y, z))
-			{
-				setIsRunning(true);
-				getAI().setIntention(CtrlIntention.MOVE_TO, new Location(x, y, z));
-			}
-		}
-	}
-	
-	public void walkToGludinCenter()
-	{
-		int x = (-82642 + Rnd.get(-300, 300));
-		int y = (150920 + Rnd.get(-300, 300));
-		int z = -3120;
-		
-		if (!isMoving())
-		{
-			if (GeoEngine.getInstance().canMoveToTarget(getX(), getY(), getZ(), x, y, z))
-			{
-				setIsRunning(true);
-				getAI().setIntention(CtrlIntention.MOVE_TO, new Location(x, y, z));
-			}
-		}
-	}
-	
-	public void walkCTF()
-	{
-		int x = 111368 + Rnd.get(-100, 100);
-		int y = -15128 + Rnd.get(-300, 300);
-		int z = -1696;
-		
-		if (getX() != x && getY() != y && getZ() != z)
-		{
-			if (GeoEngine.getInstance().canMoveToTarget(getX(), getY(), getZ(), x, y, z))
-			{
-				setIsRunning(true);
-				getAI().setIntention(CtrlIntention.MOVE_TO, new Location(x, y, z));
-				Phantom_CTF_Archer.doCastlist(this);
-			}
-		}
-	}
-	
-	public void rndWalkEvent()
-	{
-		int x = getX();
-		int y = getY();
-		int z = getZ();
-		if (TvT._started && _inEventTvT)
-		{
-			switch (Rnd.get(1, 3))
-			{
-				case 1:
-					x = -22456;
-					y = -116317;
-					break;
-				case 2:
-					x = -20997;
-					y = -116397;
-					break;
-				case 3:
-					x = -21615;
-					y = -116406;
-					break;
-			}
-		}
-		else if (CTF._started && _inEventCTF)
-		{
-			x = 111368 + Rnd.get(-100, 100);
-			y = -15128 + Rnd.get(-700, 700);
-			z = -1696;
-		}
-		else if (Domination._started && _inEventDomi)
-		{
-			switch (Rnd.get(1, 3))
-			{
-				case 1:
-					x = 94456;
-					y = -121032;
-					break;
-				case 2:
-					x = 93672;
-					y = -120904;
-					break;
-				case 3:
-					x = 94456;
-					y = -121128;
-					break;
-			}
-		}
-		else if (HuntingGround._started && _inEventHG)
-		{
-			switch (Rnd.get(1, 3))
-			{
-				case 1:
-					x = 177432;
-					y = -84680;
-					break;
-				case 2:
-					x = 178296;
-					y = -85592;
-					break;
-				case 3:
-					x = 179192;
-					y = -86472;
-					break;
-			}
-		}
-		
-		if (!isMoving())
-		{
-			if (GeoEngine.getInstance().canMoveToTarget(getX(), getY(), getZ(), x, y, z))
-			{
-				setIsRunning(true);
-				getAI().setIntention(CtrlIntention.MOVE_TO, new Location(x, y, z));
-			}
-		}
-	}
-	
-	public void moveToStrategicPositionCTF(final Player player)
-	{
-		if (!player._inEventCTF || player._teamNameCTF == null)
-			return;
-		
-		// Posições estratégicas baseadas no time
-		int baseX, baseY, baseZ;
-		
-		int move = Rnd.get(1, 2);
-		
-		switch (move)
-		{
-			case 1:
-				if (player._teamNameCTF.equals("Blue"))
-				{
-					// Time Azul - posições defensivas/próxima à base
-					baseX = 111359 + Rnd.get(-500, 500);
-					baseY = -12313 + Rnd.get(-500, 500);
-					baseZ = -1706;
-				}
-				else
-				{
-					// Time Vermelho - posições defensivas/próxima à base
-					baseX = 111351 + Rnd.get(-500, 500);
-					baseY = -18103 + Rnd.get(-500, 500);
-					baseZ = -1706;
-				}
-				break;
-			case 2:
-				if (player._teamNameCTF.equals("Blue"))
-				{
-					// Time Azul - posições ofensivas
-					baseX = 111351 + Rnd.get(-500, 500);
-					baseY = -18103 + Rnd.get(-500, 500);
-					baseZ = -1706;
-				}
-				else
-				{
-					// Time Vermelho - posições ofensivas
-					baseX = 111359 + Rnd.get(-500, 500);
-					baseY = -12313 + Rnd.get(-500, 500);
-					baseZ = -1706;
-				}
-				
-			default:
-				if (player._teamNameCTF.equals("Blue"))
-				{
-					// Time Azul
-					baseX = 11369 + Rnd.get(-100, 100);
-					baseY = -14456 + Rnd.get(-100, 100);
-					baseZ = -1696;
-				}
-				else
-				{
-					// Time Vermelho
-					baseX = 11369 + Rnd.get(-100, 100);
-					baseY = -16104 + Rnd.get(-100, 100);
-					baseZ = -1696;
-				}
-				break;
-		}
-		
-		setRunning();
-		if (GeoEngine.getInstance().canMoveToTarget(getX(), getY(), getZ(), baseX, baseY, baseZ))
-			player.getAI().setIntention(CtrlIntention.MOVE_TO, new Location(baseX, baseY, baseZ));
 	}
 	
 	public boolean isPeaceZone()

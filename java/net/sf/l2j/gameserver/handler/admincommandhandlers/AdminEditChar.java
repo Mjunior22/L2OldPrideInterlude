@@ -39,7 +39,7 @@ import net.sf.l2j.gameserver.network.serverpackets.GMViewItemList;
 import net.sf.l2j.gameserver.network.serverpackets.HennaInfo;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
-import bots.oldpride.PhantomOld;
+import phantom.FakePlayer;
 
 public class AdminEditChar implements IAdminCommandHandler
 {
@@ -780,7 +780,7 @@ public class AdminEditChar implements IAdminCommandHandler
 		if (player == null)
 		{
 			WorldObject target = activeChar.getTarget();
-			if (!(target instanceof Player) || (target instanceof PhantomOld))
+			if (!(target instanceof Player) || (target instanceof FakePlayer))
 				return;
 
 			player = (Player) target;

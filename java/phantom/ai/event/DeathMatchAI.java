@@ -1,47 +1,62 @@
 package phantom.ai.event;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import net.sf.l2j.commons.random.Rnd;
+
+import net.sf.l2j.gameserver.model.actor.instance.Player;
+
+import events.oldpride.DM;
+
 import phantom.FakePlayer;
 import phantom.FakePlayerConfig;
 import phantom.FakePlayerManager;
 
-import net.sf.l2j.commons.random.Rnd;
-
-import net.sf.l2j.gameserver.model.Location;
-
-import events.oldpride.DM;
-
-
-public class DeathMatchAI 
+/**
+ * Phantoms for the DM event. DM.startTeleport() calls spawnPhantoms() right before the minimum-players check, and DM.cleanDM() calls unspawnPhantoms().
+ */
+public class DeathMatchAI
 {
-	public static List<FakePlayer> _dmFakes  = new CopyOnWriteArrayList<>();
-	public static List<Location> _dmFakelocs = new ArrayList<>();
-	public static int _dmFakesCount = Rnd.get(FakePlayerConfig.DM_FAKE_PLAYER_COUNT_MIN, FakePlayerConfig.DM_FAKE_PLAYER_COUNT_MAX);
-	
-	public static boolean spawnPhantoms()
+	public static List<FakePlayer> _dmFakes = new CopyOnWriteArrayList<>();
+
+	/**
+	 * Registers phantoms in the event. Does nothing when no real player is registered, so an event is never played by phantoms only.
+	 * @return true if at least one phantom was registered
+	 */
+	public static synchronized boolean spawnPhantoms()
 	{
 		try
 		{
-			Location loc = null; 
-			
-			for (int i = 0; i <_dmFakesCount; i++)
+			// Leftovers of a previous run.
+			unspawnPhantoms();
+
+			if (countRealParticipants() == 0)
+				return false;
+
+			final int min = FakePlayerConfig.DM_FAKE_PLAYER_COUNT_MIN;
+			final int max = FakePlayerConfig.DM_FAKE_PLAYER_COUNT_MAX;
+			final int count = max <= min ? min : Rnd.get(min, max);
+
+			for (int i = 0; i < count; i++)
 			{
-				loc = _dmFakelocs.get(Rnd.get(_dmFakelocs.size()));
-				FakePlayer fakeSoloPlayer = FakePlayerManager.spawnEventPlayer(loc.getX() + Rnd.get(210), loc.getY() + Rnd.get(210), loc.getZ());
-				fakeSoloPlayer.setFakeEvent(true);
-				fakeSoloPlayer.assignDefaultAI();
-				
-				_dmFakes.add(fakeSoloPlayer);
+				final FakePlayer fake = FakePlayerManager.spawnEventPlayer(DM._npcX + Rnd.get(-150, 150), DM._npcY + Rnd.get(-150, 150), DM._npcZ);
+				fake.setFakeEvent(true);
+
+				DM.addPlayer(fake);
+
+				// addPlayer() refuses silently (player limit, class not allowed...).
+				if (!fake._inEventDM)
+				{
+					fake.despawnPlayer();
+					continue;
+				}
+
+				fake.assignDefaultAI();
+				_dmFakes.add(fake);
 			}
-			
-			for (FakePlayer fakePlayer : _dmFakes)
-			{
-				DM.addPlayer(fakePlayer);
-			}
-			
-			return true;
+
+			return !_dmFakes.isEmpty();
 		}
 		catch (Exception e)
 		{
@@ -49,8 +64,8 @@ public class DeathMatchAI
 			return false;
 		}
 	}
-	
-	public static boolean unspawnPhantoms()
+
+	public static synchronized boolean unspawnPhantoms()
 	{
 		try
 		{
@@ -67,5 +82,19 @@ public class DeathMatchAI
 			e.printStackTrace();
 			return false;
 		}
+	}
+
+	private static int countRealParticipants()
+	{
+		int real = 0;
+
+		synchronized (DM._players)
+		{
+			for (Player player : DM._players)
+				if (player != null && !(player instanceof FakePlayer))
+					real++;
+		}
+
+		return real;
 	}
 }

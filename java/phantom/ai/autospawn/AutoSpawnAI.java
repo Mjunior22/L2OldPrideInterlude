@@ -89,7 +89,8 @@ public class AutoSpawnAI
 					}
 				}
 				
-				_pvpFakes.add(fake);
+				if (fake != null)
+						_pvpFakes.add(fake);
 			}
 		}
 		catch (Exception e)
@@ -106,7 +107,7 @@ public class AutoSpawnAI
 			{
 				if (fakePlayer != null)
 				{
-					fakePlayer.teleToLocation(0,0,0,0);
+					// No pre-teleport here: it spawned the phantom at 0,0 right before despawning it.
 					fakePlayer.despawnPlayer();
 				}
 			}

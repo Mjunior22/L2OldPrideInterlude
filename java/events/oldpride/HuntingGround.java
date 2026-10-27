@@ -2925,8 +2925,6 @@ public class HuntingGround implements EventTask
 								{
 									if (player.isSpawnProtected())
 										player.setSpawnProtection(false);
-									
-									player.starAttack();
 								}
 							}, Rnd.get(3000, 4000));
 						}

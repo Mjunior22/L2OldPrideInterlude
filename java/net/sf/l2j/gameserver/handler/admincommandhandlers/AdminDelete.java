@@ -11,10 +11,8 @@ import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 
-import bots.oldpride.Phantom_PvP_Archer;
-import bots.oldpride.Phantom_PvP_Dagger;
-import bots.oldpride.Phantom_PvP_Mages;
 import phantom.FakePlayer;
+import phantom.FakePlayerManager;
 import phantom.ai.autospawn.AutoSpawnAI;
 
 /**
@@ -42,9 +40,6 @@ public class AdminDelete implements IAdminCommandHandler
 				if (player.isPhantomPvPArcher() || player.isPhantomPvPDagger() || player.isPhantomPvPSrc() || player.isPhantomPvPNcr()
 					|| player.isPhantomPvPSps() || player.isPhantomPvPSph())
 				{
-					Phantom_PvP_Archer.removePhantom(player);
-					Phantom_PvP_Dagger.GmDelete(player);
-					Phantom_PvP_Mages.GmDelete(player);
 					L2GameClient client = player.getClient();
 					
 					player.setClient(null);
@@ -58,12 +53,19 @@ public class AdminDelete implements IAdminCommandHandler
 		}
 		else if (command.startsWith("admin_unspawnpvp"))
 		{
-			for (Player player : World.getInstance().getPlayers())
+			// getFakePlayers() only returns FakePlayer instances (the old loop cast every Player, including the GM, to FakePlayer)
+			// and also covers phantoms spawned by //spawnclass, which are not in AutoSpawnAI._pvpFakes.
+			int count = 0;
+			for (FakePlayer fake : FakePlayerManager.getFakePlayers())
 			{
-				if (((FakePlayer) player).isFakePvp())
-					AutoSpawnAI.unspawnPhantoms();
+				if (fake.isFakePvp())
+				{
+					fake.despawnPlayer();
+					count++;
+				}
 			}
-			activeChar.sendMessage("Deleting the phantom pvp.");
+			AutoSpawnAI._pvpFakes.clear();
+			activeChar.sendMessage("Despawned " + count + " PvP phantoms.");
 		}
 		
 		return true;
@@ -78,6 +80,17 @@ public class AdminDelete implements IAdminCommandHandler
 	private static void handleDelete(Player activeChar)
 	{
 		WorldObject obj = activeChar.getTarget();
+
+		// Phantoms are Players, not Npcs: they have their own removal path.
+		if (obj instanceof FakePlayer)
+		{
+			final FakePlayer fake = (FakePlayer) obj;
+			final String name = fake.getName();
+			fake.despawnPlayer();
+			activeChar.sendMessage("Despawned phantom " + name + ".");
+			return;
+		}
+
 		if (obj != null && obj instanceof Npc)
 		{
 			Npc target = (Npc) obj;

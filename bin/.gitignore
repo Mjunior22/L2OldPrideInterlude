@@ -1,7 +1,14 @@
+/bots/
 /custom/
 /events/
 /hwid/
 /inertia/
+/logging.properties
+/loginserver.properties
 /luna/
 /net/
+/npcs.properties
 /phantom/
+/players.properties
+/server.properties
+/siege.properties

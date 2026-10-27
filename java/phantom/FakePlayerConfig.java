@@ -106,7 +106,11 @@ public class FakePlayerConfig
 	public static boolean ALLOW_FAKE_PLAYER_DM;
 	public static int DM_FAKE_PLAYER_COUNT_MIN;
 	public static int DM_FAKE_PLAYER_COUNT_MAX;
-	
+
+	public static boolean ALLOW_FAKE_PLAYER_KTB;
+	public static int KTB_FAKE_PLAYER_COUNT_MIN;
+	public static int KTB_FAKE_PLAYER_COUNT_MAX;
+
 	public static boolean ALLOW_FAKE_PLAYER_DICE;
 	public static int DICE_FAKE_PLAYER_COUNT_MIN;
 	public static int DICE_FAKE_PLAYER_COUNT_MAX;
@@ -220,6 +224,10 @@ public class FakePlayerConfig
 		ALLOW_FAKE_PLAYER_DM = phantom.getProperty("DMAllowFakePlayer", false);
 		DM_FAKE_PLAYER_COUNT_MIN = phantom.getProperty("DMFakePlayerCountMin", 5);
 		DM_FAKE_PLAYER_COUNT_MAX = phantom.getProperty("DMFakePlayerCountMax", 5);
+
+		ALLOW_FAKE_PLAYER_KTB = phantom.getProperty("KTBAllowFakePlayer", false);
+		KTB_FAKE_PLAYER_COUNT_MIN = phantom.getProperty("KTBFakePlayerCountMin", 5);
+		KTB_FAKE_PLAYER_COUNT_MAX = phantom.getProperty("KTBFakePlayerCountMax", 5);
 		
 		ALLOW_FAKE_PLAYER_DICE = phantom.getProperty("DiceAllowFakePlayer", false);
 		DICE_FAKE_PLAYER_COUNT_MIN = phantom.getProperty("DiceFakePlayerCountMin", 5);

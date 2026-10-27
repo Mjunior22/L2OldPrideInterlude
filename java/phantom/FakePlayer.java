@@ -53,6 +53,7 @@ import events.oldpride.DM;
 import events.oldpride.Domination;
 import events.oldpride.HuntingGround;
 import events.oldpride.TvT;
+import events.oldpride.ktb.KTBEvent;
 import phantom.ai.FakePlayerAI;
 import phantom.helpers.FakeHelpers;
 
@@ -66,6 +67,9 @@ public class FakePlayer extends Player
 	private boolean _isFakeEvent;
 	private boolean _isFakeTeleport;
 	private boolean _isTour;
+
+	/** Set once despawnPlayer() has run. A despawned phantom must never re-enter the world. */
+	private volatile boolean _despawned;
 	protected String _mood = "";
 	
 	public boolean isUnderControl()
@@ -780,7 +784,50 @@ public class FakePlayer extends Player
 		getAI().setIntention(CtrlIntention.ATTACK, this.getTarget());
 	}
 	
+	public boolean isDespawned()
+	{
+		return _despawned;
+	}
+
+	/**
+	 * Only the old phantom system (bots.oldpride) set this flag. The event code (TvT, DM, CTF...) uses it to skip the anti-AFK kick, PvP counters, HWID checks, and Inertia treats !isPhantom() as a real player.
+	 */
+	@Override
+	public boolean isPhantom()
+	{
+		return true;
+	}
+
+	/**
+	 * Phantoms are never persisted. deleteMe() calls store(), which would write effects/vars for a character that has no row in the database (one set of garbage rows per phantom per event).
+	 */
+	@Override
+	public synchronized void store(boolean storeActiveEffects)
+	{
+	}
+
+	/**
+	 * Every teleport (event revive tasks, the death-revive task, AI return-to-town...) ends in onTeleported(), which calls spawnMe(). Without this guard, a delayed task that fires after despawnPlayer() puts the phantom back in the world regions while World.getPlayers() no longer lists it: a visible ghost that no command can find. (Player.onTeleported() is final, so the guard sits here; FakePlayerAI.teleportToLocation has its own.)
+	 */
+	@Override
+	public void teleToLocation(int x, int y, int z, int randomOffset, int instanceId)
+	{
+		if (_despawned)
+			return;
+
+		super.teleToLocation(x, y, z, randomOffset, instanceId);
+	}
+
 	public synchronized void despawnPlayer()
+	{
+		if (_despawned)
+			return;
+
+		_despawned = true;
+		doDespawnPlayer();
+	}
+
+	private void doDespawnPlayer()
 	{
 		try
 		{
@@ -939,6 +986,11 @@ public class FakePlayer extends Player
 					DM.onDeath(this, killer);
 					sendMessage("You will be revived and teleported to spot in " + Config.DM_REVIVE_DELAY / 1000 + " seconds!");
 				}
+				else if (_inEventKTB && KTBEvent.isStarted())
+				{
+					// Player.doDie handles this, the FakePlayer copy of doDie did not: a phantom killed by the boss was never sent back to the spot.
+					KTBEvent.onDie(this);
+				}
 			}
 			
 			if (isFakePvp() || isFakeFarm())
@@ -948,6 +1000,9 @@ public class FakePlayer extends Player
 					@Override
 					public void run()
 					{
+						if (isDespawned())
+							return;
+
 						teleToLocation(TeleportType.TOWN);
 						doRevive();
 						buffSelf();

@@ -58,9 +58,6 @@ import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.gameserver.util.Util;
 import net.sf.l2j.util.CloseUtil;
 
-import bots.oldpride.Phantom_PvP_Archer;
-import bots.oldpride.Phantom_PvP_Dagger;
-import bots.oldpride.Phantom_PvP_Mages;
 import events.dailytasks.DailyTaskManager;
 import events.manager.oldpride.DomiEventManager;
 import events.manager.oldpride.EventTask;
@@ -776,13 +773,6 @@ public class Domination implements EventTask
 		if (_doublePvPs)
 			Announcement.AnnounceEvents("Double PvPs During Event's Phase");
 		Announcement.AnnounceEvents("========================");
-		
-		if (Config.ENABLE_FAKE_PVP)
-		 {
-			 Phantom_PvP_Archer.init();
-			 Phantom_PvP_Dagger.init();
-			 Phantom_PvP_Mages.init();
-		 }
 		
 		return true;
 	}

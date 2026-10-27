@@ -57,9 +57,8 @@ import net.sf.l2j.gameserver.network.serverpackets.TutorialCloseHtml;
 import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.util.CloseUtil;
 
-import bots.oldpride.Phantom_PvP_Archer;
-import bots.oldpride.Phantom_PvP_Dagger;
-import bots.oldpride.Phantom_PvP_Mages;
+import phantom.FakePlayerConfig;
+import phantom.ai.event.DeathMatchAI;
 import events.dailytasks.DailyTaskManager;
 import events.manager.oldpride.DMEventManager;
 import events.manager.oldpride.EventTask;
@@ -755,13 +754,6 @@ public class DM implements EventTask
 			Announcement.AnnounceEvents("Double PvPs During Event's Phase");
 		Announcement.AnnounceEvents("========================");
 		
-		if (Config.ENABLE_FAKE_PVP)
-		 {
-			 Phantom_PvP_Archer.init();
-			 Phantom_PvP_Dagger.init();
-			 Phantom_PvP_Mages.init();
-		 }
-		
 		return true;
 	}
 	
@@ -791,6 +783,10 @@ public class DM implements EventTask
 		
 		removeOfflinePlayers();
 		
+		// Top up with phantoms (only if at least one real player registered), so they count for the minimum
+		if (FakePlayerConfig.ALLOW_FAKE_PLAYER_DM)
+			DeathMatchAI.spawnPhantoms();
+
 		if (!checkMinPlayers(_players.size()))
 		{
 			Announcement.AnnounceEvents("DM Not enough players . Min : " + _minPlayers + ", Reg : " + _players.size());
@@ -1967,6 +1963,7 @@ public class DM implements EventTask
 	            _log.warning("Error unspawning NPC: " + e.getMessage());
 	        }
 	        
+	        DeathMatchAI.unspawnPhantoms();
 	        _log.info("DM cleanup completed.");
 	        
 	        // Recarregar dados
@@ -2546,8 +2543,6 @@ public class DM implements EventTask
 								{
 									if (player.isSpawnProtected())
 										player.setSpawnProtection(false);
-									
-									player.starAttack();
 								}
 							}, Rnd.get(3000, 4000));
 						}

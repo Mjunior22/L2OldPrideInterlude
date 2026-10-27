@@ -58,9 +58,8 @@ import net.sf.l2j.gameserver.network.serverpackets.TutorialCloseHtml;
 import net.sf.l2j.gameserver.skills.AbnormalEffect;
 import net.sf.l2j.util.CloseUtil;
 
-import bots.oldpride.Phantom_PvP_Archer;
-import bots.oldpride.Phantom_PvP_Dagger;
-import bots.oldpride.Phantom_PvP_Mages;
+import phantom.FakePlayerConfig;
+import phantom.ai.event.TeamVsTeamAI;
 import events.dailytasks.DailyTaskManager;
 import events.manager.oldpride.EventTask;
 import events.manager.oldpride.GlobalVariablesHolder;
@@ -795,13 +794,7 @@ public class TvT implements EventTask
 		if (_doublePvPs)
 			Announcement.AnnounceEvents("Double PvPs During Event's Phase");
 		Announcement.AnnounceEvents("========================");
-		
-		if (Config.ENABLE_FAKE_PVP)
-		 {
-			 Phantom_PvP_Archer.init();
-			 Phantom_PvP_Dagger.init();
-			 Phantom_PvP_Mages.init();
-		 }
+
 		return true;
 	}
 	
@@ -816,6 +809,10 @@ public class TvT implements EventTask
 		
 		removeOfflinePlayers();
 		
+		// Top up with phantoms (only if at least one real player registered), so they count for the minimum
+		if (FakePlayerConfig.ALLOW_FAKE_PLAYER_TVT)
+			TeamVsTeamAI.spawnPhantoms();
+
 		if (Config.TVT_EVEN_TEAMS.equals("SHUFFLE") && checkMinPlayers(_playersShuffle.size()))
 		{
 			shuffleTeams();
@@ -2247,6 +2244,7 @@ public class TvT implements EventTask
 	        FenceManager.getInstance().getFences().clear();
 	    
 	    _cleaned = true;
+	    TeamVsTeamAI.unspawnPhantoms();
 	    _log.info("TvT cleanup completed.");
 	    loadData();
 	}
@@ -3063,8 +3061,6 @@ public class TvT implements EventTask
 								{
 									if (player.isSpawnProtected())
 										player.setSpawnProtection(false);
-									
-									player.starAttack();
 								}
 							}, Rnd.get(3000, 4000));
 						}

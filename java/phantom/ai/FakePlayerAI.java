@@ -31,6 +31,8 @@ import net.sf.l2j.gameserver.network.serverpackets.StopRotation;
 import net.sf.l2j.gameserver.network.serverpackets.TeleportToLocation;
 
 import events.oldpride.CTF;
+import events.oldpride.DM;
+import events.oldpride.TvT;
 import phantom.FakePlayer;
 import phantom.FakePlayerConfig;
 
@@ -59,7 +61,8 @@ public abstract class FakePlayerAI
 	 */
 	protected void scheduleRandomPvpDespawn()
 	{
-		if (_pvpDespawnScheduled)
+		// All 17 class AIs call this from thinkAndAct(), so without the isFakePvp() check every phantom (event, farm, citizen) was despawned after FakePvpDespawnMinTime..MaxTime minutes.
+		if (_pvpDespawnScheduled || !_fakePlayer.isFakePvp())
 			return;
 		
 		_pvpDespawnScheduled = true;
@@ -75,6 +78,10 @@ public abstract class FakePlayerAI
 	{
 		if (_fakePlayer.isDead())
 		{
+			// TvT, DM and KTB revive their own participants (respawn delay, team spot). Reviving here, in place, would skip that.
+			if (_fakePlayer._inEventTvT || _fakePlayer._inEventDM || _fakePlayer.isFakeKTBEvent())
+				return;
+
 			if (iterationsOnDeath >= toVillageIterationsOnDeath) 
 			{
 				toPvpZoneOnDeath();
@@ -97,7 +104,16 @@ public abstract class FakePlayerAI
 		return _isBusyThinking;
 	}
 	
-	protected void teleportToLocation(int x, int y, int z, int randomOffset) 
+	protected void teleportToLocation(int x, int y, int z, int randomOffset)
+	{
+		// This method bypasses Creature.teleToLocation and ends in onTeleported() -> spawnMe(), so it needs its own guard.
+		if (_fakePlayer.isDespawned())
+			return;
+
+		doTeleportToLocation(x, y, z, randomOffset);
+	}
+
+	private void doTeleportToLocation(int x, int y, int z, int randomOffset)
 	{
 		_fakePlayer.stopMove(null);
 		_fakePlayer.abortAttack();
@@ -134,6 +150,17 @@ public abstract class FakePlayerAI
 			if (((Creature)_fakePlayer.getTarget()).isDead())
 			_fakePlayer.setTarget(null);
 		}	
+	}
+
+	private boolean isEventEnemy(Player other)
+	{
+		if (_fakePlayer._inEventTvT)
+			return TvT._started && other._inEventTvT && _fakePlayer._teamNameTvT != null && !_fakePlayer._teamNameTvT.equals(other._teamNameTvT);
+
+		if (_fakePlayer._inEventDM)
+			return DM._started && other._inEventDM;
+
+		return false;
 	}
 
 	protected boolean checkTarget(Creature target)
@@ -187,6 +214,13 @@ public abstract class FakePlayerAI
 				// ✅ Verificar visibilidade
 				if (!GeoEngine.getInstance().canSeeTarget(_fakePlayer, target))
 					return false;
+			}
+
+			// TvT / DM: only fight the enemies of the own event. Without this, the isInFunEvent() rule below made TvT phantoms attack their own team.
+			if (_fakePlayer._inEventTvT || _fakePlayer._inEventDM)
+			{
+				final Player owner = target.getActingPlayer();
+				return owner != null && owner != _fakePlayer && isEventEnemy(owner);
 			}
 
 			if (target instanceof Player)

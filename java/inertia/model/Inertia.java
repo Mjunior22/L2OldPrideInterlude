@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -82,6 +83,16 @@ public class Inertia implements Runnable
 	private long _lagTicks;
 	
 	private volatile boolean _fastPending = false;
+	
+	// ===== Target inválido (sem visão / inalcançável) =====
+	private static final long STUCK_TIMEOUT = 10000;   // ms sem progresso até desistir do alvo
+	private static final long IGNORE_TIME = 30000;    // ms que o alvo fica ignorado
+	private static final int STUCK_MOVE_MARGIN = 40;  // menos que isso = não saiu do lugar
+	private final ConcurrentHashMap<Integer, Long> _ignoredTargets = new ConcurrentHashMap<>();
+	private int _watchTargetId = 0;
+	private long _watchSince = 0;
+	private int _watchX, _watchY, _watchZ;
+	private double _watchTargetHp;
 	
 	/** The Constant _log. */
 	protected static final Logger _log = Logger.getLogger(Inertia.class.getName());
@@ -351,6 +362,9 @@ public class Inertia implements Runnable
 			return;
 		}
 		
+		if (checkBadTarget(player, actualTarget))
+		    return;
+		
 		// Cura tem prioridade sobre qualquer modo de auto-attack —
 		// se alguém da party precisa de cura, cura antes de considerar atacar.
 		for (final ChillAction healSlot : _chillSkills)
@@ -597,6 +611,9 @@ public class Inertia implements Runnable
 	    public boolean test(Attackable target)
 	    {
 	        if (target == null || target.isAlikeDead())
+	            return false;
+	        
+	        if (isIgnoredTarget(target))
 	            return false;
 	        
 	        // ADICIONE ESTA VERIFICAÇÃO
@@ -1968,6 +1985,110 @@ public class Inertia implements Runnable
 	    if (previousTarget != healTarget)
 	        player.setTarget(previousTarget);
 
+	    return false;
+	}
+	
+	private boolean isIgnoredTarget(final Creature target)
+	{
+	    if (target == null)
+	        return false;
+	    final Long until = _ignoredTargets.get(target.getObjectId());
+	    if (until == null)
+	        return false;
+	    if (until < System.currentTimeMillis())
+	    {
+	        _ignoredTargets.remove(target.getObjectId());
+	        return false;
+	    }
+	    return true;
+	}
+
+	private void ignoreCurrentTarget(final Player player, final Creature target)
+	{
+	    final long now = System.currentTimeMillis();
+	    if (_ignoredTargets.size() > 50)
+	        _ignoredTargets.values().removeIf(t -> t < now);
+	    
+	    _ignoredTargets.put(target.getObjectId(), now + IGNORE_TIME);
+	    _watchTargetId = 0;
+	    
+	    _behave.onUntarget();                              // quebra ataque/cast e limpa o target
+	    player.getAI().setIntention(CtrlIntention.ACTIVE); // para de andar até o alvo antigo
+	}
+
+	private void startWatch(final Player player, final Creature target, final long now)
+	{
+	    _watchTargetId = target.getObjectId();
+	    _watchSince = now;
+	    _watchX = player.getX();
+	    _watchY = player.getY();
+	    _watchZ = player.getZ();
+	    _watchTargetHp = target.getCurrentHp();
+	}
+
+	// Maior alcance com que o personagem consegue atingir um mob (arma ou skill ofensiva)
+	private int getEngageRange(final Player player)
+	{
+	    int range = player.getPhysicalAttackRange() + 100;
+	    for (final ChillAction action : _chillSkills)
+	    {
+	        if (action == null)
+	            continue;
+	        final L2Skill skill = SkillTable.getInstance().getInfoLevelMax(action.getActionId());
+	        if (skill != null && !isHealSkill(skill))
+	            range = Math.max(range, skill.getCastRange(player));
+	    }
+	    return range;
+	}
+
+	/** @param player 
+	 * @param target 
+	 * @return true se o target foi descartado (o tick deve parar e buscar outro) */
+	private boolean checkBadTarget(final Player player, final Creature target)
+	{
+	    // Só vale para mobs. Alvos de cura (party) nunca entram aqui.
+	    if (!(target instanceof Attackable))
+	    {
+	        _watchTargetId = 0;
+	        return false;
+	    }
+	    
+	    // 1) Sem linha de visão: troca na hora
+	    if (!GeoEngine.getInstance().canSeeTarget(player, target))
+	    {
+	        ignoreCurrentTarget(player, target);
+	        return true;
+	    }
+	    
+	    // 2) Preso: sem progresso por STUCK_TIMEOUT
+	    final long now = System.currentTimeMillis();
+	    if (_watchTargetId != target.getObjectId())
+	    {
+	        startWatch(player, target, now);
+	        return false;
+	    }
+	    
+	    // Situações em que ficar parado é normal: reinicia a observação
+	    if (player.isMovementDisabled() || player.isAttackingNow() || player.isCastingNow()
+	        || player.isInsideRadius(target, getEngageRange(player), false, false))
+	    {
+	        startWatch(player, target, now);
+	        return false;
+	    }
+	    
+	    final boolean moved = !player.isInsideRadius(_watchX, _watchY, _watchZ, STUCK_MOVE_MARGIN, false, false);
+	    final boolean damaged = target.getCurrentHp() < _watchTargetHp;
+	    if (moved || damaged)
+	    {
+	        startWatch(player, target, now);
+	        return false;
+	    }
+	    
+	    if (now - _watchSince >= STUCK_TIMEOUT)
+	    {
+	        ignoreCurrentTarget(player, target);
+	        return true;
+	    }
 	    return false;
 	}
 }
