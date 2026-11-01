@@ -7,6 +7,8 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.model.item.instance.ItemInstance;
+import net.sf.l2j.gameserver.model.item.instance.ItemInstance.ItemLocation;
 import net.sf.l2j.gameserver.data.SkillTable.FrequentSkill;
 import net.sf.l2j.gameserver.data.manager.CursedWeaponManager;
 import net.sf.l2j.gameserver.data.xml.MapRegionData.TeleportType;
@@ -899,6 +901,14 @@ public class FakePlayer extends Player
 			// Oust player from boat
 			if (getVehicle() != null)
 				getVehicle().oustPlayer(this, true, Location.DUMMY_LOC);
+			
+			// addItem() INSERTed every item of the phantom into the `items` table (owner_id = phantom). It is never loaded again, so delete those rows (ownerId 0 + VOID makes updateDatabase() remove them).
+			for (ItemInstance item : getInventory().getItems())
+			{
+				item.setOwnerId(0);
+				item.setLocation(ItemLocation.VOID);
+				item.updateDatabase();
+			}
 			
 			// Update inventory and remove them from the world
 			getInventory().deleteMe();

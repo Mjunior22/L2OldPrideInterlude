@@ -192,11 +192,11 @@ public class ElvenRuinsDungeon extends Quest
 		}
 	}
 	
-	private static final int MIN_PVP = 100;
+	private static final int MIN_PVP = 500;
 	private static final int MIN_LEVEL = 84;
 	private static final int MAX_LEVEL = 91;
 	/** 1 = a lonely player can enter. */
-	private static final int MIN_MEMBERS = 1;
+	private static final int MIN_MEMBERS = 5;
 	private static final int MAX_MEMBERS = 9;
 	/** Maximum distance between the party leader and each member when opening the passage. */
 	private static final int PARTY_RANGE = 1000;
@@ -210,7 +210,7 @@ public class ElvenRuinsDungeon extends Quest
 	/** Respawn of the monsters inside the dungeon, in seconds. 0 = they don't respawn : killing all of them ends the dungeon. */
 	private static final int RESPAWN_SECONDS = 0;
 	/** Time before a player can open a new passage. */
-	private static final int COOLDOWN_HOURS = 24;
+	private static final int COOLDOWN_HOURS = 72;
 
 	/** Name of the player variable which stores the end of the cooldown. */
 	private static final String MEMO_KEY = "ElvenRuinsDungeon";

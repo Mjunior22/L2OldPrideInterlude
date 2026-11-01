@@ -7,6 +7,7 @@ import phantom.FakePlayer;
 import phantom.FakePlayerConfig;
 import phantom.FakePlayerManager;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.commons.random.Rnd;
 
 import events.oldpride.CTF;
@@ -19,6 +20,10 @@ public class CaptureTheFlagAI
 	
 	public static boolean spawnPhantoms()
 	{
+		// Master switch of the event phantoms (EnableFakeEvent).
+		if (!Config.ENABLE_FAKE_EVENT)
+			return false;
+		
 		try
 		{
 			for (int i = 0; i <_ctfFakesCount; i++)

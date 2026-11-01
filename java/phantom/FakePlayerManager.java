@@ -3,6 +3,7 @@ package phantom;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.xml.MapRegionData.TeleportType;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -42,6 +43,10 @@ public enum FakePlayerManager
 	
 	public static void startPvPBots() 
 	{
+	    // Master switch of the PvP phantoms (EnableFakePvP).
+	    if (!Config.ENABLE_FAKE_PVP)
+	        return;
+
 	    AutoSpawnAI.getInstance();
 	}
 	

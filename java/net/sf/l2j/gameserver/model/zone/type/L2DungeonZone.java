@@ -28,7 +28,7 @@ public class L2DungeonZone extends L2SpawnZone
 			{
 				character.setInsideZone(ZoneId.DUNGEON, false);
 				character.getActingPlayer().setInDungeonZone(false);
-				character.sendMessage("There is nothing in the Elven Ruins. Go away!");
+				character.sendMessage("There is nothing here. Go away!");
 				character.setIsPendingRevive(true);
 				character.teleToLocation(83380, 148107, -3404, 0);
 				return;
@@ -74,6 +74,13 @@ public class L2DungeonZone extends L2SpawnZone
 				character.getActingPlayer().setInDungeonZone(true);
 				character.sendMessage("You have entered the ancient Elven Ruin. Beware of the creatures!");
 			}
+			else if (_id == 99001 && !character.getActingPlayer().isInDungeonZone()) // ER
+			{
+				character.setInsideZone(ZoneId.FARM, true);
+				character.setInsideZone(ZoneId.DUNGEON, true);
+				character.getActingPlayer().setInDungeonZone(true);
+				character.sendMessage("You have entered the Genesis. Beware of the creatures!");
+			}
 		}
 		character.setInsideZone(ZoneId.DUNGEON, true);
 	}
@@ -95,6 +102,8 @@ public class L2DungeonZone extends L2SpawnZone
 			player.sendMessage("You have left a dungeon zone");
 			player.getActingPlayer().setInDungeonZone(false);
 			if (_id == 99000) // ER
+				player.setInDungeonZone(false);
+			else if (_id == 99001) // GE
 				player.setInDungeonZone(false);
 		}
 	}

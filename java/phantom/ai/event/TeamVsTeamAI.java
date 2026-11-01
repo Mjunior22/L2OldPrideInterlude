@@ -28,6 +28,10 @@ public class TeamVsTeamAI
 	 */
 	public static synchronized boolean spawnPhantoms()
 	{
+		// Master switch of the event phantoms (EnableFakeEvent).
+		if (!Config.ENABLE_FAKE_EVENT)
+			return false;
+		
 		try
 		{
 			// Leftovers of a previous run.
@@ -86,7 +90,8 @@ public class TeamVsTeamAI
 		}
 	}
 
-	/** The team with the fewest players, which is also the only one BALANCE accepts. SHUFFLE assigns the teams later, so the name is ignored. */
+	/** The team with the fewest players, which is also the only one BALANCE accepts. SHUFFLE assigns the teams later, so the name is ignored. 
+	 * @return */
 	private static String pickTeam()
 	{
 		if (Config.TVT_EVEN_TEAMS.equals("SHUFFLE") || TvT._teams.isEmpty())

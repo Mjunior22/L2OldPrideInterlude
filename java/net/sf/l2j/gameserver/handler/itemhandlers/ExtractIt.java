@@ -557,7 +557,7 @@ public class ExtractIt implements IItemHandler
 	private static int enchantItem()
 	{
 		int i = 15;
-		for (; i <= 20; i++)
+		for (; i <= 19; i++)
 		{
 			if (Rnd.get(100) >= _enchantChance)
 			{
@@ -570,7 +570,7 @@ public class ExtractIt implements IItemHandler
 	private static int enchantItem1()
 	{
 		int e = 20;
-		for (; e <= 25; e++)
+		for (; e <= 24; e++)
 		{
 			if (Rnd.get(100) >= _enchantChance)
 			{
@@ -583,7 +583,7 @@ public class ExtractIt implements IItemHandler
 	private static int enchantItem2()
 	{
 		int i = 11;
-		for (; i <= 16; i++)
+		for (; i <= 15; i++)
 		{
 			if (Rnd.get(100) >= _enchantChance)
 			{
@@ -596,7 +596,7 @@ public class ExtractIt implements IItemHandler
 	private static int enchantItem3()
 	{
 		int i = 3;
-		for (; i <= 8; i++)
+		for (; i <= 7; i++)
 		{
 			if (Rnd.get(100) >= _enchantChance)
 			{
@@ -609,7 +609,7 @@ public class ExtractIt implements IItemHandler
 	private static int enchantItemOly()
 	{
 		int e = 5;
-		for (; e <= 10; e++)
+		for (; e <= 9; e++)
 		{
 			if (Rnd.get(100) >= _enchantChance)
 			{

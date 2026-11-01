@@ -8,7 +8,6 @@ import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
-import net.sf.l2j.gameserver.network.L2GameClient;
 import net.sf.l2j.gameserver.network.SystemMessageId;
 
 import phantom.FakePlayer;
@@ -23,7 +22,6 @@ public class AdminDelete implements IAdminCommandHandler
 	private static final String[] ADMIN_COMMANDS =
 	{
 		"admin_delete",
-		"admin_deletepvp",
 		"admin_unspawnpvp"
 	};
 	
@@ -33,24 +31,6 @@ public class AdminDelete implements IAdminCommandHandler
 		if (command.equals("admin_delete"))
 			handleDelete(activeChar);
 		
-		else if (command.startsWith("admin_deletepvp"))
-		{
-			for (Player player : World.getInstance().getPlayers())
-			{
-				if (player.isPhantomPvPArcher() || player.isPhantomPvPDagger() || player.isPhantomPvPSrc() || player.isPhantomPvPNcr()
-					|| player.isPhantomPvPSps() || player.isPhantomPvPSph())
-				{
-					L2GameClient client = player.getClient();
-					
-					player.setClient(null);
-					
-					player.deleteMe();
-					client.setActiveChar(null);
-					client.setState(L2GameClient.GameClientState.AUTHED);
-				}
-			}
-			activeChar.sendMessage("Deleting the phantom pvp.");
-		}
 		else if (command.startsWith("admin_unspawnpvp"))
 		{
 			// getFakePlayers() only returns FakePlayer instances (the old loop cast every Player, including the GM, to FakePlayer)

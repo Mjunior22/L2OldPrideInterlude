@@ -3,6 +3,7 @@ package phantom.ai.event;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.gameserver.model.actor.instance.Player;
@@ -26,6 +27,10 @@ public class DeathMatchAI
 	 */
 	public static synchronized boolean spawnPhantoms()
 	{
+		// Master switch of the event phantoms (EnableFakeEvent).
+		if (!Config.ENABLE_FAKE_EVENT)
+			return false;
+		
 		try
 		{
 			// Leftovers of a previous run.

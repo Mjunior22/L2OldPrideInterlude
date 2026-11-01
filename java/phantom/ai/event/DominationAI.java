@@ -7,6 +7,7 @@ import phantom.FakePlayer;
 import phantom.FakePlayerConfig;
 import phantom.FakePlayerManager;
 
+import net.sf.l2j.Config;
 import net.sf.l2j.commons.random.Rnd;
 import net.sf.l2j.gameserver.model.Location;
 import events.oldpride.Domination;
@@ -20,6 +21,10 @@ public class DominationAI
 	
 	public static boolean spawnPhantoms()
 	{
+		// Master switch of the event phantoms (EnableFakeEvent).
+		if (!Config.ENABLE_FAKE_EVENT)
+			return false;
+		
 		try
 		{
 			Location loc = null; 

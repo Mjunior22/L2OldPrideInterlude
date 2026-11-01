@@ -364,7 +364,10 @@ public class AdminAdmin implements IAdminCommandHandler
 //		    {
 //		        FakePlayerManager.startPvPBots();
 //		    }
-		    FakePlayerManager.startPvPBots();
+		    if (Config.ENABLE_FAKE_PVP)
+		        FakePlayerManager.startPvPBots();
+		    else
+		        activeChar.sendMessage("EnableFakePvP is disabled in the config.");
 		}
 		else if (command.startsWith("admin_unspawnfake"))
 		{
