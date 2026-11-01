@@ -159,6 +159,9 @@ public class Mdam implements ISkillHandler
 				
 				activeChar.sendDamageMessage(target, damage, mcrit, false, false);
 
+				// Aplica o dano de fato na vida do alvo
+				target.reduceCurrentHp(damage, activeChar, skill);
+
 				double absorb = (int) activeChar.calcStat(Stats.ABSORB_DAMAGE_PERCENT_SKILL, 0, target, skill);
 				
 				if (absorb > 0 && !target.isInvul() && damage > 0)
@@ -174,7 +177,9 @@ public class Mdam implements ISkillHandler
 						
 						if (activeChar.getCurrentHp() < finalHp)
 							activeChar.sendPacket(new ExShowScreenMessage(1, -1, 2, false, 1, 0, 0, false, 2500, false, "Drained " + target.getName() + " for " + hpDrained + " HP"));
-						
+
+						// Aplica o HP drenado no caster
+						activeChar.setCurrentHp(finalHp);
 					}
 				}
 				
