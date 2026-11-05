@@ -1605,6 +1605,7 @@ public abstract class Creature extends WorldObject
 			case TARGET_CLAN:
 			case TARGET_ALLY:
 			case TARGET_SELF:
+			case TARGET_SELF_AND_PET:
 			case TARGET_FRONT_AURA:
 			case TARGET_BEHIND_AURA:
 			case TARGET_ALL:

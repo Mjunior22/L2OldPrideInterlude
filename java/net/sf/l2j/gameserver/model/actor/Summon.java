@@ -460,6 +460,7 @@ public abstract class Summon extends Playable
 			case TARGET_BEHIND_AURA:
 			case TARGET_AURA_UNDEAD:
 			case TARGET_SELF:
+			case TARGET_SELF_AND_PET:
 			case TARGET_CORPSE_ALLY:
 			case TARGET_ALL:
 				target = this;
@@ -550,7 +551,8 @@ public abstract class Summon extends Playable
 						skill.getTargetType(this) != SkillTargetType.TARGET_CLAN &&
 						skill.getTargetType(this) != SkillTargetType.TARGET_ALLY &&
 						skill.getTargetType(this) != SkillTargetType.TARGET_PARTY &&
-						skill.getTargetType(this) != SkillTargetType.TARGET_SELF)
+						skill.getTargetType(this) != SkillTargetType.TARGET_SELF &&
+						skill.getTargetType(this) != SkillTargetType.TARGET_SELF_AND_PET)
 				{
 					getOwner().sendPacket(new SystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
 					return;

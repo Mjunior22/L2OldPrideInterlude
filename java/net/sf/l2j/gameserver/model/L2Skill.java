@@ -122,6 +122,7 @@ public abstract class L2Skill implements IChanceSkillTrigger
 		
 		// ADDED BY VEGA
 		TARGET_ONE_AND_PET,
+		TARGET_SELF_AND_PET,
 		TARGET_COUPLE,
 		TARGET_SELF_AND_COUPLE,
 	}
@@ -1666,6 +1667,16 @@ public abstract class L2Skill implements IChanceSkillTrigger
 					activeChar
 				};
 			}
+			
+			case TARGET_SELF_AND_PET:
+			{
+				final Summon pet = activeChar.getPet();
+				if (pet != null && !pet.isDead() && pet.isInsideRadius(activeChar, 1000, true, false))
+					return new Creature[] { pet, activeChar };
+				
+				return new Creature[]{ activeChar };
+			}
+				
 			case TARGET_HOLY:
 			{
 				if (!(target instanceof HolyThing))

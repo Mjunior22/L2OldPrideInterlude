@@ -3,7 +3,9 @@ package net.sf.l2j.gameserver.model.actor.instance;
 import net.sf.l2j.gameserver.model.MinionList;
 import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Creature;
+import net.sf.l2j.gameserver.model.actor.Summon;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
+import net.sf.l2j.gameserver.model.group.Party;
 
 import events.dailytasks.DailyTaskManager;
 
@@ -104,73 +106,62 @@ public class Monster extends Attackable
 		if (_master != null)
 			_master.getMinionList().onMinionDie(this, _master.getSpawn().getRespawnDelay() * 1000 / 2);
 		
-		var party = killer.getParty();
-		
+		// Resolve o jogador responsável pela morte (próprio player, pet ou summon)
+		Player playerKiller = null;
+
 		if (killer instanceof Player)
+			playerKiller = (Player) killer;
+		else if (killer instanceof Summon)
+			playerKiller = ((Summon) killer).getOwner();
+
+		if (playerKiller != null)
 		{
-			if (party != null)
+			final String taskType = getDailyTaskType();
+
+			if (taskType != null)
 			{
-				for (Player members : party.getMembers())
+				final Party killerParty = playerKiller.getParty();
+
+				if (killerParty != null)
 				{
-					if (members.isInsideRadius(killer, 2000, false, false))
+					for (Player member : killerParty.getMembers())
 					{
-						if (this.getNpcId() >= 40100 && this.getNpcId() <= 40103)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "SOLO_MONSTER_KILL", 1);
-						if (this.getNpcId() == 40104)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "DREAD_KILLER", 1);
-						if (this.getNpcId() == 40105)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "DESPAIR_KILLER", 1);
-						if (this.getNpcId() == 40106)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "SPITEFUL_KILLER", 1);
-						if (this.getNpcId() == 40109)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "ABYSS_KILLER", 1);
-						if (this.getNpcId() == 40110)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "HOUND_KILLER", 1);
-						if (this.getNpcId() == 40111)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "MESSENGER_KILLER", 1);
-						if (this.getNpcId() == 40112)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "GLABREZU_KILLER", 1);
-						if (this.getNpcId() == 40115)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "ANAKAZEL_KILLER", 1);
-						if (this.getNpcId() == 40116)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "DEMON_KILLER", 1);
-						if (this.getNpcId() == 40117)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "ANUNNAKI_KILLER", 1);
-						if (this.getNpcId() == 40124)
-							DailyTaskManager.getInstance().updateTaskProgress(members, "MAGUS_KILLER", 1);
+						if (member.isInsideRadius(playerKiller, 2000, false, false))
+							DailyTaskManager.getInstance().updateTaskProgress(member, taskType, 1);
 					}
 				}
-			}
-			else
-			{
-				if (this.getNpcId() >= 40100 && this.getNpcId() <= 40103)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "SOLO_MONSTER_KILL", 1);
-				if (this.getNpcId() == 40104)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "DREAD_KILLER", 1);
-				if (this.getNpcId() == 40105)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "DESPAIR_KILLER", 1);
-				if (this.getNpcId() == 40106)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "SPITEFUL_KILLER", 1);
-				if (this.getNpcId() == 40109)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "ABYSS_KILLER", 1);
-				if (this.getNpcId() == 40110)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "HOUND_KILLER", 1);
-				if (this.getNpcId() == 40111)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "MESSENGER_KILLER", 1);
-				if (this.getNpcId() == 40112)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "GLABREZU_KILLER", 1);
-				if (this.getNpcId() == 40115)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "ANAKAZEL_KILLER", 1);
-				if (this.getNpcId() == 40116)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "DEMON_KILLER", 1);
-				if (this.getNpcId() == 40117)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "ANUNNAKI_KILLER", 1);
-				if (this.getNpcId() == 40124)
-					DailyTaskManager.getInstance().updateTaskProgress((Player)killer, "MAGUS_KILLER", 1);
+				else
+				{
+					DailyTaskManager.getInstance().updateTaskProgress(playerKiller, taskType, 1);
+				}
 			}
 		}
 
 		return true;
+	}
+	
+	private String getDailyTaskType()
+	{
+		final int npcId = getNpcId();
+
+		if (npcId >= 40100 && npcId <= 40103)
+			return "SOLO_MONSTER_KILL";
+
+		switch (npcId)
+		{
+			case 40104: return "DREAD_KILLER";
+			case 40105: return "DESPAIR_KILLER";
+			case 40106: return "SPITEFUL_KILLER";
+			case 40109: return "ABYSS_KILLER";
+			case 40110: return "HOUND_KILLER";
+			case 40111: return "MESSENGER_KILLER";
+			case 40112: return "GLABREZU_KILLER";
+			case 40115: return "ANAKAZEL_KILLER";
+			case 40116: return "DEMON_KILLER";
+			case 40117: return "ANUNNAKI_KILLER";
+			case 40124: return "MAGUS_KILLER";
+			default: return null;
+		}
 	}
 
 	@Override

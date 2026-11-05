@@ -7223,6 +7223,7 @@ public class Player extends Playable
 			switch (skill.getTargetType(this))
 			{
 				case TARGET_SELF:
+				case TARGET_SELF_AND_PET:
 				case TARGET_PARTY:
 				case TARGET_CLAN:
 				case TARGET_ALLY:
@@ -7257,7 +7258,10 @@ public class Player extends Playable
 							if (pet.getTarget() == pet.getOwner().getTarget() && pet.getTarget() != pet.getOwner() && pet.getTarget() != pet)
 							{
 								if (pet.getNpcId() == 14837)
+								{
 									pet.useMagic(pet.getSkill(5139), true, true);
+									pet.getAI().setIntention(CtrlIntention.ATTACK, getTarget());
+								}
 								else
 									pet.getAI().setIntention(CtrlIntention.ATTACK, getTarget());
 							}
@@ -7436,6 +7440,7 @@ public class Player extends Playable
 				target = skill.getFirstOfTargetList(this);
 				break;
 			case TARGET_SELF:
+			case TARGET_SELF_AND_PET:
 			case TARGET_PARTY:
 			case TARGET_ALLY:
 			case TARGET_CLAN:
@@ -7606,6 +7611,7 @@ public class Player extends Playable
 						case TARGET_ALLY:
 						case TARGET_PARTY:
 						case TARGET_SELF:
+						case TARGET_SELF_AND_PET:
 						case TARGET_GROUND:
 							break;
 						default:
@@ -7674,6 +7680,7 @@ public class Player extends Playable
 				case TARGET_BEHIND_AURA:
 				case TARGET_CLAN:
 				case TARGET_SELF:
+				case TARGET_SELF_AND_PET:
 				case TARGET_PARTY:
 				case TARGET_ALLY:
 				case TARGET_CORPSE_MOB:
@@ -7754,6 +7761,7 @@ public class Player extends Playable
 			case TARGET_PET:
 			case TARGET_SUMMON:
 			case TARGET_SELF:
+			case TARGET_SELF_AND_PET:
 				break;
 			default:
 				if (!checkPvpSkill(target, skill, forceUse))

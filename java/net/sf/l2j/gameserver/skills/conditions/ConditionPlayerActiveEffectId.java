@@ -39,7 +39,6 @@ public class ConditionPlayerActiveEffectId extends Condition
 	{
 		for (L2Effect e : env._character.getAllEffects())
 		{
-			System.out.println(env._character.getAllEffects());
 			if (e != null)
 			{
 				if (e.getSkill().getId() == _effectId)
