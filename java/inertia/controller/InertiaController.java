@@ -123,6 +123,21 @@ public class InertiaController implements IBypassHandler, Savable, ITimeTrigger
 			autoChill.render();
 			return true;
 		}
+		else if (cmd.startsWith("chill_autoinvite"))
+		{
+			final String[] p = cmd.trim().split("\\s+", 2);
+			final String arg = p.length > 1 ? p[1].trim() : "";
+			
+			if (p[0].equals("chill_autoinvite_toggle"))
+				autoChill.setAutoInvite(!autoChill.isAutoInvite());
+			else if (p[0].equals("chill_autoinvite_add"))
+				autoChill.addAutoInviteName(arg);
+			else if (p[0].equals("chill_autoinvite_del"))
+				autoChill.removeAutoInviteName(arg);
+			
+			autoChill.showAutoInviteSettings();
+			return true;
+		}
 		else if (cmd.startsWith("chill_toggle_resurrect"))
 		{
 		    // Este comando agora só verifica VIP e mostra a janela
@@ -576,5 +591,13 @@ public class InertiaController implements IBypassHandler, Savable, ITimeTrigger
 	    {
 	        e.printStackTrace();
 	    }
+	}
+	
+	/** Chamado pelo EnterWorld: convida de volta quem estiver na lista de auto invite de algum autofarm ligado. 
+	 * @param player */
+	public void onPlayerEnterWorld(final Player player)
+	{
+		for (final Inertia inertia : _playerInertias.values())
+			inertia.onPlayerLogin(player);
 	}
 }

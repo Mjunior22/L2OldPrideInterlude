@@ -18,18 +18,26 @@ import net.sf.l2j.gameserver.data.ItemTable;
 import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.geoengine.GeoEngine;
+import net.sf.l2j.gameserver.model.BlockList;
 import net.sf.l2j.gameserver.model.ILocational;
 import net.sf.l2j.gameserver.model.L2Skill;
+import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Creature;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
 import net.sf.l2j.gameserver.model.actor.instance.Monster;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
+import net.sf.l2j.gameserver.model.group.Party;
+import net.sf.l2j.gameserver.model.group.Party.LootRule;
 import net.sf.l2j.gameserver.model.item.kind.Item;
 import net.sf.l2j.gameserver.model.location.Location;
+import net.sf.l2j.gameserver.network.SystemMessageId;
+import net.sf.l2j.gameserver.network.serverpackets.AskJoinParty;
 import net.sf.l2j.gameserver.network.serverpackets.ExServerPrimitive;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
+import net.sf.l2j.gameserver.network.serverpackets.SystemMessage;
+import net.sf.l2j.gameserver.skills.Formulas;
 import net.sf.l2j.gameserver.util.Util;
 
 import gnu.trove.set.hash.TIntHashSet;
@@ -93,6 +101,22 @@ public class Inertia implements Runnable
 	private long _watchSince = 0;
 	private int _watchX, _watchY, _watchZ;
 	private double _watchTargetHp;
+	
+	// ===== AUTO-CURA =====
+	private static final boolean HEAL_ROTATE = true;   // alterna entre as skills de cura prontas
+	private long _healBusyUntil = 0;
+	private long _healRetryAt = 0;
+	private boolean _healRestorePending = false;
+	private WorldObject _healReturnTarget = null;
+	private int _healNextSlot = 0;
+	
+	// ===== AUTO INVITE =====
+	private boolean _autoInvite = false;
+	private final Map<String, String> _autoInviteNames = new ConcurrentHashMap<>(); // chave minúscula -> nome como digitado
+	private static final int AUTO_INVITE_MAX_NAMES = 8;
+	private static final int AUTO_INVITE_MAX_TRIES = 4;
+	private static final long AUTO_INVITE_FIRST_DELAY = 6000; // espera o cliente terminar de carregar
+	private static final long AUTO_INVITE_RETRY_DELAY = 5000;
 	
 	/** The Constant _log. */
 	protected static final Logger _log = Logger.getLogger(Inertia.class.getName());
@@ -305,6 +329,10 @@ public class Inertia implements Runnable
 				render();
 		}
 		
+		// Cura roda antes da lógica de target/ataque, independente do tipo de movimento
+		if (handleHealing(player, assistPlayer))
+			return;
+		
 		final Creature currTarget = (Creature) player.getTarget();
 		if (_searchType != ESearchType.Off)
 		{
@@ -365,20 +393,6 @@ public class Inertia implements Runnable
 		if (checkBadTarget(player, actualTarget))
 		    return;
 		
-		// Cura tem prioridade sobre qualquer modo de auto-attack —
-		// se alguém da party precisa de cura, cura antes de considerar atacar.
-		for (final ChillAction healSlot : _chillSkills)
-		{
-		    if (healSlot == null || !actionFilter.test(healSlot))
-		        continue;
-
-		    final L2Skill maybeHeal = SkillTable.getInstance().getInfoLevelMax(healSlot.getActionId());
-		    if (maybeHeal != null && isHealSkill(maybeHeal) && handleHealAction(player, maybeHeal, healSlot))
-		        return; // curou — encerra o tick aqui
-
-		    break; // achou a primeira ação disponível e não era cura (ou já tentou curar) — segue fluxo normal
-		}
-		
 		_lagTicks = _lagTicks / Config.INERTIA_RT;
 		
 		if (_autoAttack == EAutoAttack.Always || (player.isAllSkillsDisabled() && _autoAttack == EAutoAttack.Skills_Reuse))
@@ -403,7 +417,7 @@ public class Inertia implements Runnable
 			return; // Este return está OK
 		}
 		
-		final var avail = getAvailSkillActions().filter(availSkillFilter).findFirst();
+		final var avail = getAvailSkillActions().filter(a -> !isHealAction(a)).filter(availSkillFilter).findFirst();
 		if (avail != null && avail.isPresent())
 		{
 			final var availAction = avail.get();
@@ -413,12 +427,6 @@ public class Inertia implements Runnable
 				
 				if (availSkill != null)
 				{
-					if (isHealSkill(availSkill))
-				    {
-				        handleHealAction(player, availSkill, availAction);
-				        return;
-				    }
-					
 					if (!player.isPhantom())
 					{
 						if (player.getTarget() != null)
@@ -1916,76 +1924,159 @@ public class Inertia implements Runnable
 	    }
 	}
 
-	private Player findNeediestPartyMember(final ChillAction healAction, final int skillRange)
+	/** Só precisa de cura quem NÃO está com HP cheio e está no limite configurado ou abaixo. 
+	 * @param p 
+	 * @param limit 
+	 * @return */
+	private static boolean needsHeal(final Player p, final double limit)
 	{
-	    final Player player = getActivePlayer();
-	    if (player == null)
-	        return null;
-	    
-	    Player best = null;
-	    double lowestHp = 100;
-	    
-	    // Considera o próprio healer como candidato também
-	    if (player.getHpPercent() <= healAction.getTargetHp())
-	    {
-	        best = player;
-	        lowestHp = player.getHpPercent();
-	    }
-	    
-	    if (player.isInParty())
-	    {
-	        for (final var member : player.getParty().getMembers())
-	        {
-	            if (member == null || member == player || member.isDead() || !member.isOnline())
-	                continue;
-	            
-	            if (!player.isInsideRadius(member, skillRange, true, false))
-	                continue; // fora do alcance da skill
-	            
-	            final double hp = member.getHpPercent();
-	            if (hp <= healAction.getTargetHp() && hp < lowestHp)
-	            {
-	                lowestHp = hp;
-	                best = member;
-	            }
-	        }
-	    }
-	    
-	    return best;
+		return p.getCurrentHp() < p.getMaxHp() && p.getHpPercent() <= limit;
 	}
 
-	private boolean handleHealAction(final Player player, final L2Skill healSkill, final ChillAction healAction)
+	/** Skills de grupo costumam ter castRange -1 ou 0: nesses casos usa o raio da skill (ou 600). 
+	 * @param player 
+	 * @param skill 
+	 * @return */
+	private static int getHealRange(final Player player, final L2Skill skill)
 	{
-	    final Player healTarget = findNeediestPartyMember(healAction, healSkill.getCastRange(player));
-	    if (healTarget == null)
-	        return false; // ninguém precisa de cura agora
+		int range = skill.getCastRange(player);
+		if (range <= 0)
+			range = skill.getSkillRadius(player);
+		return range > 0 ? range : 600;
+	}
 
-	    final WorldObject previousTarget = player.getTarget();
-	    player.setTarget(healTarget);
+	private static boolean isHealAction(final ChillAction action)
+	{
+		if (action == null || !action.isSkill())
+			return false;
+		final L2Skill skill = SkillTable.getInstance().getInfoLevelMax(action.getActionId());
+		return skill != null && isHealSkill(skill);
+	}
 
-	    if (player.checkDoCastConditions(healSkill))
-	    {
-	        if (player.getSkillLevel(healSkill.getId()) >= 1)
-	        {
-	            player.useMagic(healSkill, false, false);
-	            healAction.initReuse();
+	/**
+	 * Escolhe quem curar: menor HP% entre quem não está com HP cheio, está no limite "Target HP",
+	 * no alcance da skill e visível. O próprio healer só entra se estiver em combate e no limite "HP".
+	 * @param healAction 
+	 * @param skillRange 
+	 * @return 
+	 */
+	private Player findNeediestPartyMember(final ChillAction healAction, final int skillRange)
+	{
+		final Player player = getActivePlayer();
+		if (player == null)
+			return null;
+		
+		Player best = null;
+		double lowestHp = Double.MAX_VALUE;
+		
+		if (player.isInCombat() && needsHeal(player, healAction.getUserHp()))
+		{
+			best = player;
+			lowestHp = player.getHpPercent();
+		}
+		
+		if (player.isInParty())
+		{
+			for (final var member : player.getParty().getMembers())
+			{
+				if (member == null || member == player || member.isDead() || !member.isOnline())
+					continue;
+				if (!needsHeal(member, healAction.getTargetHp()))
+					continue;
+				if (!player.isInsideRadius(member, skillRange, true, false))
+					continue; // fora do alcance da skill
+				if (!GeoEngine.getInstance().canSeeTarget(player, member))
+					continue; // sem linha de visão
+				
+				final double hp = member.getHpPercent();
+				if (hp < lowestHp)
+				{
+					lowestHp = hp;
+					best = member;
+				}
+			}
+		}
+		return best;
+	}
+	
+	/** Tempo real de cast (com a velocidade de cast do personagem), igual ao que o servidor usa. 
+	 * @param player 
+	 * @param skill 
+	 * @return */
+	private static long getRealCastTime(final Player player, final L2Skill skill)
+	{
+		int time = skill.getHitTime();
+		if (!skill.isStaticHitTime())
+			time = Formulas.calcSkillCastTime(player, skill, time);
+		return time;
+	}
 
-	            final long castTime = healSkill.getHitTime();
-	            scheduleFastRecheck(castTime);
-
-	            if (previousTarget != healTarget)
-	                ThreadPool.schedule(() -> player.setTarget(previousTarget), castTime + 50);
-
-	            return true;
-	        }
-	        Util.clearArray(_chillSkills);
-	        render();
-	    }
-
-	    if (previousTarget != healTarget)
-	        player.setTarget(previousTarget);
-
-	    return false;
+	/** @param player 
+	 * @param assistPlayer 
+	 * @return true se o tick deve parar aqui (cura em andamento ou cura iniciada agora). */
+	private boolean handleHealing(final Player player, final Player assistPlayer)
+	{
+		final long now = System.currentTimeMillis();
+		
+		// 1) cura em andamento: não mexe em target, ataque nem follow. Terminou: devolve o target.
+		if (_healRestorePending)
+		{
+			if (now < _healBusyUntil || player.isCastingNow())
+				return true;
+			
+			_healRestorePending = false;
+			player.setTarget(_healReturnTarget);
+			_healReturnTarget = null;
+		}
+		
+		if (player.isCastingNow() || now < _healRetryAt)
+			return false;
+		
+		// 2) procura uma cura pronta e alguém que precise dela
+		final int slots = _chillSkills.length;
+		boolean failedConditions = false;
+		
+		for (int i = 0; i < slots; i++)
+		{
+			final int idx = HEAL_ROTATE ? (_healNextSlot + i) % slots : i;
+			final ChillAction slot = _chillSkills[idx];
+			if (slot == null || !slot.isSkill() || slot.isReuse())
+				continue;
+			
+			final L2Skill skill = SkillTable.getInstance().getInfoLevelMax(slot.getActionId());
+			if (skill == null || !isHealSkill(skill) || player.getSkillLevel(skill.getId()) < 1 || player.isSkillDisabled(skill))
+				continue; // não aprendida ou em reuse: pula sem tentar castar
+			
+			final Player healTarget = findNeediestPartyMember(slot, getHealRange(player, skill));
+			if (healTarget == null)
+				continue;
+			
+			final WorldObject previous = player.getTarget();
+			player.setTarget(healTarget);
+			
+			if (!player.checkDoCastConditions(skill))
+			{
+				if (previous != healTarget)
+					player.setTarget(previous);
+				failedConditions = true;
+				continue; // tenta a próxima skill (ex.: sem MP pra essa, mas dá pra outra mais barata)
+			}
+			
+			player.useMagic(skill, false, false);
+			slot.initReuse();
+			
+			_healBusyUntil = now + 250; // janela mínima pro cast começar; depois disso vale isCastingNow()
+			_healReturnTarget = (previous != null && previous != player) ? previous : (assistPlayer != player ? assistPlayer : null);
+			_healRestorePending = true;
+			_healNextSlot = (idx + 1) % slots;
+			scheduleFastRecheck(getRealCastTime(player, skill)); // reavalia logo que o cast termina
+			return true;
+		}
+		
+		if (failedConditions)
+			_healRetryAt = now + 500; // sem MP etc.: espera um pouco, sem bloquear tudo
+		
+		return false;
 	}
 	
 	private boolean isIgnoredTarget(final Creature target)
@@ -2090,5 +2181,156 @@ public class Inertia implements Runnable
 	        return true;
 	    }
 	    return false;
+	}
+	
+	public boolean isAutoInvite()
+	{
+		return _autoInvite;
+	}
+
+	public void setAutoInvite(final boolean enable)
+	{
+		_autoInvite = enable;
+		final Player player = getActivePlayer();
+		if (player != null)
+			player.sendMessage("Auto-Invite " + (enable ? "enabled" : "disabled"));
+	}
+
+	public void addAutoInviteName(final String name)
+	{
+		final Player player = getActivePlayer();
+		if (player == null)
+			return;
+		
+		final String clean = name == null ? "" : name.trim();
+		if (clean.isEmpty() || clean.length() > 16 || !clean.matches("[A-Za-z0-9]+"))
+		{
+			player.sendMessage("Auto-Invite: invalid character name.");
+			return;
+		}
+		if (clean.equalsIgnoreCase(player.getName()))
+		{
+			player.sendMessage("Auto-Invite: you cannot add yourself.");
+			return;
+		}
+		if (_autoInviteNames.size() >= AUTO_INVITE_MAX_NAMES && !_autoInviteNames.containsKey(clean.toLowerCase()))
+		{
+			player.sendMessage("Auto-Invite: the list is full.");
+			return;
+		}
+		
+		_autoInviteNames.put(clean.toLowerCase(), clean);
+		player.sendMessage("Auto-Invite: " + clean + " added.");
+	}
+
+	public void removeAutoInviteName(final String name)
+	{
+		if (name != null)
+			_autoInviteNames.remove(name.trim().toLowerCase());
+	}
+
+	public void showAutoInviteSettings()
+	{
+		final Player player = getActivePlayer();
+		if (player == null)
+			return;
+		
+		final String btn = "width=100 height=25 back=\"L2UI_CH3.bigbutton_down\" fore=\"L2UI_CH3.bigbutton\"";
+		final StringBuilder sb = new StringBuilder("<html><body><center><br><font color=\"LEVEL\">Auto Invite</font><br1>");
+		sb.append("Status: ").append(_autoInvite ? "<font color=\"63FF63\">ON</font>" : "<font color=\"FF6363\">OFF</font>").append("<br1>");
+		sb.append("<button value=\"").append(_autoInvite ? "Turn OFF" : "Turn ON").append("\" action=\"bypass chill_autoinvite_toggle\" ").append(btn).append("><br>");
+		sb.append("<table width=260 bgcolor=000000>");
+		if (_autoInviteNames.isEmpty())
+			sb.append("<tr><td align=center>No names saved</td></tr>");
+		for (final String display : _autoInviteNames.values())
+			sb.append("<tr><td width=170>").append(display).append("</td><td><button value=\"Remove\" action=\"bypass chill_autoinvite_del ").append(display).append("\" width=70 height=21 back=\"L2UI_CH3.bigbutton_down\" fore=\"L2UI_CH3.bigbutton\"></td></tr>");
+		sb.append("</table><br>Character name:<br1><edit var=\"nm\" width=120 height=15><br1>");
+		sb.append("<button value=\"Add\" action=\"bypass chill_autoinvite_add $nm\" ").append(btn).append("><br>");
+		sb.append("<button value=\"Back\" action=\"bypass chill_refresh\" ").append(btn).append(">");
+		sb.append("</center></body></html>");
+		
+		final NpcHtmlMessage html = new NpcHtmlMessage(1);
+		html.setHtml(sb.toString());
+		player.sendPacket(html);
+	}
+
+	/** Chamado pelo controller quando qualquer personagem entra no jogo. 
+	 * @param target */
+	public void onPlayerLogin(final Player target)
+	{
+		if (!_running || !_autoInvite || !_autoInviteNames.containsKey(target.getName().toLowerCase()))
+			return;
+		
+		final String targetName = target.getName();
+		ThreadPool.schedule(() -> tryAutoInvite(targetName, 1), AUTO_INVITE_FIRST_DELAY);
+	}
+
+	private void tryAutoInvite(final String targetName, final int attempt)
+	{
+		final Player leader = getActivePlayer();
+		final Player target = World.getInstance().getPlayer(targetName);
+		if (leader == null || target == null || !_running || !_autoInvite)
+			return; // alguém saiu ou o autofarm/auto invite foi desligado
+		
+		if (sendAutoInvite(leader, target))
+			return;
+		
+		if (attempt < AUTO_INVITE_MAX_TRIES)
+			ThreadPool.schedule(() -> tryAutoInvite(targetName, attempt + 1), AUTO_INVITE_RETRY_DELAY);
+	}
+
+	/** @param leader 
+	 * @param target 
+	 * @return true se não há mais o que tentar (convite enviado ou impossível); false se alguém está ocupado e vale tentar de novo. */
+	private static boolean sendAutoInvite(final Player leader, final Player target)
+	{
+		if (target == leader || target.isInParty())
+			return true; // já está em party (a minha ou outra): não mexe
+		
+		if (target.getClient() == null || target.getClient().isDetached())
+			return true;
+		
+		if (target.isCursedWeaponEquipped() || leader.isCursedWeaponEquipped() || target.getAppearance().getInvisible())
+			return true;
+		
+		if (target.isInJail() || leader.isInJail() || target.isInOlympiadMode() || leader.isInOlympiadMode())
+			return true;
+		
+		if (leader.isInActiveFunEvent() || target.isInActiveFunEvent())
+			return true;
+		
+		if (Config.BLOCK_GLUDIN_INTERACTION && (leader.isInGludin() || target.isInGludin()))
+			return true;
+		
+		if (BlockList.isBlocked(target, leader))
+			return true;
+		
+		if (leader.isProcessingRequest() || target.isProcessingRequest())
+			return false; // ocupado agora: tenta de novo daqui a pouco
+		
+		final Party party = leader.getParty();
+		if (party != null)
+		{
+			if (!party.isLeader(leader))
+			{
+				leader.sendMessage("Auto-Invite: only the party leader can invite.");
+				return true;
+			}
+			
+			if (party.getMembersCount() >= 9)
+				return true;
+			
+			if (party.getPendingInvitation() && !party.isInvitationRequestExpired())
+				return false;
+			
+			party.setPendingInvitation(true);
+		}
+		else if (leader.getLootRule() == null)
+			leader.setLootRule(LootRule.ITEM_RANDOM);
+		
+		leader.onTransactionRequest(target);
+		leader.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.YOU_INVITED_S1_TO_PARTY).addCharName(target));
+		target.sendPacket(new AskJoinParty(leader.getName(), (party != null) ? party.getLootRule().ordinal() : leader.getLootRule().ordinal()));
+		return true;
 	}
 }

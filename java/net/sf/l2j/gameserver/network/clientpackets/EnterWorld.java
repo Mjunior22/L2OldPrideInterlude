@@ -78,6 +78,7 @@ import events.oldpride.HuntingGround;
 import events.oldpride.TvT;
 import events.oldpride.ktb.KTBEvent;
 import hwid.Hwid;
+import inertia.controller.InertiaController;
 
 public class EnterWorld extends L2GameClientPacket
 {
@@ -485,6 +486,8 @@ public class EnterWorld extends L2GameClientPacket
 		
 		if (ClassMaster.hasValidClasses(activeChar))
 			Gem.sendClassChangeHTML(activeChar);
+		
+		InertiaController.getInstance().onPlayerEnterWorld(activeChar);
 		
 		activeChar.sendPacket(ActionFailed.STATIC_PACKET);
 		ThreadPool.schedule(new teleportTask(activeChar), 250);
