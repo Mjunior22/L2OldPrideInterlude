@@ -74,7 +74,8 @@ public class Purchase
 		_player = player;
 		_product = product;
 		_quantity = quantity;
-		_price = quantity * Config.DONATION_PURCHASABLE_ITEMS.get(_product);
+		// multiplyExact lança ArithmeticException em vez de estourar silenciosamente o int
+		_price = Math.multiplyExact(quantity, Config.DONATION_PURCHASABLE_ITEMS.get(_product));
 		_email = email;
 		_status = status;
 		_date = System.currentTimeMillis();
@@ -133,6 +134,17 @@ public class Purchase
 			_qrCode = null;
 		
 		DonationManager.getInstance().update(this);
+	}
+	
+	/**
+	 * Muda o status apenas em memória (sem UPDATE). Usado depois que a transição já foi gravada de forma atômica no banco.
+	 * @param newStatus
+	 */
+	void setStatusInMemory(PurchaseStatus newStatus)
+	{
+		_status = newStatus;
+		if (newStatus != PurchaseStatus.WAITING && _qrCode != null)
+			_qrCode = null;
 	}
 	
 	public String getPlayerName()

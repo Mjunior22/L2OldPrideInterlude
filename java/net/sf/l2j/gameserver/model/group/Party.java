@@ -455,7 +455,10 @@ public class Party extends AbstractGroup
 		if (player == null || !_members.contains(player))
 			return;
 		
-		if (_members.size() == 2 || isLeader(player))
+		// Only a party reduced to 2 members (or less) is dissolved. If the leader leaves a bigger party, the leadership goes to the next member.
+		final boolean wasLeader = isLeader(player);
+
+		if (_members.size() <= 2)
 			disband();
 		else
 		{
@@ -496,6 +499,10 @@ public class Party extends AbstractGroup
 			
 			if (_commandChannel != null)
 				player.sendPacket(ExCloseMPCC.STATIC_PACKET);
+
+			// The leader left : the next member of the party becomes the new leader.
+			if (wasLeader)
+				passLeadership(_members.get(0));
 		}
 	}
 	
@@ -538,6 +545,32 @@ public class Party extends AbstractGroup
 		{
 			final PartyMatchRoom room = PartyMatchRoomList.getInstance().getPlayerRoom(player);
 			room.changeLeader(player);
+		}
+	}
+
+	/**
+	 * Pass the leadership to a member, once the previous leader has left the party. The CommandChannel leadership (if this party was leading it) and the party match room owner follow.
+	 * @param newLeader : the remaining member who becomes the new party leader.
+	 */
+	private void passLeadership(Player newLeader)
+	{
+		// Refresh channel leader, if any. The previous leader is still registered at this point.
+		if (_commandChannel != null && _commandChannel.isLeader(getLeader()))
+		{
+			_commandChannel.setLeader(newLeader);
+			_commandChannel.broadcastPacket(SystemMessage.getSystemMessage(SystemMessageId.COMMAND_CHANNEL_LEADER_NOW_S1).addCharName(newLeader));
+		}
+
+		// Update this party leader and broadcast the update.
+		setLeader(newLeader);
+		broadcastNewLeaderStatus();
+
+		// Keep the party match room owner in sync with the party leader.
+		if (newLeader.isInPartyMatchRoom())
+		{
+			final PartyMatchRoom room = PartyMatchRoomList.getInstance().getPlayerRoom(newLeader);
+			if (room != null && room.getOwner() != newLeader)
+				room.changeLeader(newLeader);
 		}
 	}
 	

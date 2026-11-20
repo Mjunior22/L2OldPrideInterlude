@@ -249,7 +249,10 @@ import net.sf.l2j.gameserver.util.Strings;
 import net.sf.l2j.gameserver.util.Util;
 
 import custom.effectprotection.PvpProtectionManager;
+import custom.mpcard.CardDonationManager;
+import custom.paypal.PayPalDonationManager;
 import custom.pix.DonationManager;
+import custom.stripepay.StripeDonationManager;
 import events.achievement.AchievementsManager;
 import events.dailytasks.DailyTaskManager;
 import events.manager.oldpride.GlobalVariablesHolder;
@@ -9234,6 +9237,15 @@ public class Player extends Playable
 		revalidateZone(true);
 		notifyFriends(true);
 		DonationManager.getInstance().offlinePlayer(this);
+		
+		if (Config.ENABLE_PAYPAL_MOD)
+			PayPalDonationManager.getInstance().offlinePlayer(this);
+		
+		if (Config.ENABLE_MPCARD_MOD)
+			CardDonationManager.getInstance().offlinePlayer(this);
+		
+		if (Config.ENABLE_STRIPE_MOD)
+			StripeDonationManager.getInstance().offlinePlayer(this);
 	}
 	
 	public long getLastAccess()

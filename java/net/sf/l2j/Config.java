@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +77,62 @@ public final class Config
 	public static int DONATION_EXPIRATION_TIME;
 	public static Map<Integer, Integer> DONATION_PURCHASABLE_ITEMS;
 	public static boolean ENABLE_PIX_MOD;
+	
+	// PayPal (custom.paypal)
+	public static boolean ENABLE_PAYPAL_MOD;
+	public static boolean PAYPAL_SANDBOX;
+	public static String PAYPAL_CLIENT_ID;
+	public static String PAYPAL_CLIENT_SECRET;
+	public static String PAYPAL_CURRENCY;
+	public static String PAYPAL_BRAND_NAME;
+	public static String PAYPAL_RETURN_URL;
+	public static String PAYPAL_PUBLIC_URL;
+	public static int PAYPAL_REDIRECT_PORT;
+	public static int PAYPAL_EXPIRATION_MINUTES;
+	public static int PAYPAL_MAX_QUANTITY;
+	public static int PAYPAL_MAX_OPEN_ORDERS;
+	public static int PAYPAL_POLL_SECONDS;
+	// SMTP opcional para enviar o link de pagamento por e-mail (vazio = desligado)
+	public static String PAYPAL_SMTP_HOST;
+	public static int PAYPAL_SMTP_PORT;
+	public static String PAYPAL_SMTP_USER;
+	public static String PAYPAL_SMTP_PASSWORD;
+	public static String PAYPAL_SMTP_FROM;
+	/** itemId -> preco unitario em centavos */
+	public static Map<Integer, Integer> PAYPAL_ITEMS;
+	
+	// Cartao de credito (inclusive internacional) via Mercado Pago Checkout Pro (custom.mpcard)
+	public static boolean ENABLE_MPCARD_MOD;
+	public static boolean MPCARD_SANDBOX;
+	public static String MPCARD_BRAND_NAME;
+	public static String MPCARD_BACK_URL;
+	public static int MPCARD_MAX_QUANTITY;
+	public static int MPCARD_MAX_OPEN_ORDERS;
+	public static int MPCARD_POLL_SECONDS;
+	public static int MPCARD_EXPIRATION_MINUTES;
+	// SMTP opcional para enviar o link de pagamento por e-mail (vazio = desligado)
+	public static String MPCARD_SMTP_HOST;
+	public static int MPCARD_SMTP_PORT;
+	public static String MPCARD_SMTP_USER;
+	public static String MPCARD_SMTP_PASSWORD;
+	public static String MPCARD_SMTP_FROM;
+	public static Map<Integer, Integer> CARD_PURCHASABLE_ITEMS;
+	
+	// Cartao de credito (inclusive internacional) via Stripe Payment Links (custom.stripepay)
+	public static boolean ENABLE_STRIPE_MOD;
+	public static String STRIPE_SECRET_KEY;
+	public static String STRIPE_RETURN_URL;
+	public static String STRIPE_BRAND_NAME;
+	public static int STRIPE_MAX_QUANTITY;
+	public static int STRIPE_MAX_OPEN_ORDERS;
+	public static int STRIPE_POLL_SECONDS;
+	public static int STRIPE_EXPIRATION_MINUTES;
+	// SMTP opcional para enviar o link de pagamento por e-mail (vazio = desligado)
+	public static String STRIPE_SMTP_HOST;
+	public static int STRIPE_SMTP_PORT;
+	public static String STRIPE_SMTP_USER;
+	public static String STRIPE_SMTP_PASSWORD;
+	public static String STRIPE_SMTP_FROM;
 	
 	/**
 	 * @Donation
@@ -2506,6 +2563,83 @@ public final class Config
 		GMAIL_ADDRESS = l2jmega.getProperty("GmailAddress", "");
 		GMAIL_PASSWORD = l2jmega.getProperty("GmailPassword", "");
 		AUTO_ENCHANT_INTERVAL = Integer.parseInt(l2jmega.getProperty("AutoEnchantInterval", "1000"));
+		
+		ENABLE_PAYPAL_MOD = l2jmega.getProperty("EnablePayPalMod", false);
+		PAYPAL_SANDBOX = l2jmega.getProperty("PayPalSandbox", true);
+		PAYPAL_CLIENT_ID = l2jmega.getProperty("PayPalClientId", "").trim();
+		PAYPAL_CLIENT_SECRET = l2jmega.getProperty("PayPalClientSecret", "").trim();
+		PAYPAL_CURRENCY = l2jmega.getProperty("PayPalCurrency", "USD").trim().toUpperCase();
+		PAYPAL_BRAND_NAME = l2jmega.getProperty("PayPalBrandName", "Server Donation");
+		PAYPAL_PUBLIC_URL = l2jmega.getProperty("PayPalPublicUrl", "").trim();
+		PAYPAL_REDIRECT_PORT = l2jmega.getProperty("PayPalRedirectPort", 0);
+		PAYPAL_RETURN_URL = l2jmega.getProperty("PayPalReturnUrl", "https://www.paypal.com").trim();
+		PAYPAL_EXPIRATION_MINUTES = l2jmega.getProperty("PayPalExpirationMinutes", 60);
+		PAYPAL_MAX_QUANTITY = l2jmega.getProperty("PayPalMaxQuantity", 100);
+		PAYPAL_MAX_OPEN_ORDERS = l2jmega.getProperty("PayPalMaxOpenOrders", 3);
+		PAYPAL_POLL_SECONDS = l2jmega.getProperty("PayPalPollSeconds", 30);
+		PAYPAL_SMTP_HOST = l2jmega.getProperty("PayPalSmtpHost", "smtp.gmail.com").trim();
+		PAYPAL_SMTP_PORT = l2jmega.getProperty("PayPalSmtpPort", 587);
+		PAYPAL_SMTP_USER = l2jmega.getProperty("PayPalSmtpUser", "").trim();
+		PAYPAL_SMTP_PASSWORD = l2jmega.getProperty("PayPalSmtpPassword", "").trim();
+		PAYPAL_SMTP_FROM = l2jmega.getProperty("PayPalSmtpFrom", "").trim();
+		
+		PAYPAL_ITEMS = new HashMap<>();
+		final String[] paypalItems = l2jmega.getProperty("PayPalItems", (String[]) null, ",");
+		if (paypalItems != null)
+		{
+			for (String item : paypalItems)
+			{
+				try
+				{
+					// formato itemId-preco (ex.: 9798-1.50 = 1,50 na moeda configurada)
+					final String[] data = item.trim().split("-");
+					PAYPAL_ITEMS.put(Integer.parseInt(data[0]), new BigDecimal(data[1]).movePointRight(2).intValueExact());
+				}
+				catch (Exception e)
+				{
+					_log.warning("Config: PayPalItems entrada invalida ignorada: \"" + item + "\"");
+				}
+			}
+		}
+		
+		ENABLE_MPCARD_MOD = l2jmega.getProperty("EnableCardMod", false);
+		MPCARD_SANDBOX = l2jmega.getProperty("CardUseSandboxLink", false);
+		MPCARD_BRAND_NAME = l2jmega.getProperty("CardBrandName", "Server Donation");
+		MPCARD_BACK_URL = l2jmega.getProperty("CardBackUrl", "https://www.mercadopago.com.br").trim();
+		MPCARD_MAX_QUANTITY = l2jmega.getProperty("CardMaxQuantity", 999);
+		MPCARD_MAX_OPEN_ORDERS = l2jmega.getProperty("CardMaxOpenOrders", 3);
+		MPCARD_POLL_SECONDS = l2jmega.getProperty("CardPollSeconds", 30);
+		MPCARD_EXPIRATION_MINUTES = l2jmega.getProperty("CardExpirationMinutes", 60);
+		MPCARD_SMTP_HOST = l2jmega.getProperty("CardSmtpHost", "smtp.gmail.com").trim();
+		MPCARD_SMTP_PORT = l2jmega.getProperty("CardSmtpPort", 587);
+		MPCARD_SMTP_USER = l2jmega.getProperty("CardSmtpUser", "").trim();
+		MPCARD_SMTP_PASSWORD = l2jmega.getProperty("CardSmtpPassword", "").trim();
+		MPCARD_SMTP_FROM = l2jmega.getProperty("CardSmtpFrom", "").trim();
+		CARD_PURCHASABLE_ITEMS = new HashMap<>();
+		String[] cardPurchasable = l2jmega.getProperty("CardPurchasableItems", (String[]) null, ",");
+		if (cardPurchasable != null)
+		{
+			for (String item : cardPurchasable)
+			{
+				final String[] itemData = item.split("-");
+				CARD_PURCHASABLE_ITEMS.put(Integer.parseInt(itemData[0]), Integer.parseInt(itemData[1]));
+			}
+		}
+		
+		ENABLE_STRIPE_MOD = l2jmega.getProperty("EnableStripeMod", false);
+		STRIPE_SECRET_KEY = l2jmega.getProperty("StripeSecretKey", "").trim();
+		STRIPE_RETURN_URL = l2jmega.getProperty("StripeReturnUrl", "").trim();
+		STRIPE_BRAND_NAME = l2jmega.getProperty("StripeBrandName", "Server Donation");
+		STRIPE_MAX_QUANTITY = l2jmega.getProperty("StripeMaxQuantity", 999);
+		STRIPE_MAX_OPEN_ORDERS = l2jmega.getProperty("StripeMaxOpenOrders", 3);
+		STRIPE_POLL_SECONDS = l2jmega.getProperty("StripePollSeconds", 30);
+		STRIPE_EXPIRATION_MINUTES = l2jmega.getProperty("StripeExpirationMinutes", 60);
+		STRIPE_SMTP_HOST = l2jmega.getProperty("StripeSmtpHost", "smtp.gmail.com").trim();
+		STRIPE_SMTP_PORT = l2jmega.getProperty("StripeSmtpPort", 587);
+		STRIPE_SMTP_USER = l2jmega.getProperty("StripeSmtpUser", "").trim();
+		STRIPE_SMTP_PASSWORD = l2jmega.getProperty("StripeSmtpPassword", "").trim();
+		STRIPE_SMTP_FROM = l2jmega.getProperty("StripeSmtpFrom", "").trim();
+		
 	}
 	
 	/**
@@ -2810,70 +2944,70 @@ public final class Config
 	/**
 	 * Loads Domination settings.
 	 */
-//	private static final void loadKTB()
-//	{
-//		final ExProperties tvt = initProperties(Config.KTB_FILE);
-//		
-//		KTB_EVENT_ENABLED = Boolean.parseBoolean(tvt.getProperty("KTBEventEnabled", "false"));
-//		
-//		KTB_SKILL_PROTECT = Boolean.parseBoolean(tvt.getProperty("KTBSkillProtect", "false"));
-//		for (String id : tvt.getProperty("KTBDisableSkillList", "0").split(","))
-//		{
-//			KTB_SKILL_LIST.add(Integer.parseInt(id));
-//		}
-//		DEBUG_KTB = tvt.getProperty("DebugKTB", true);
-//		KTB_EVEN_TEAMS = tvt.getProperty("KTBEvenTeams", "BALANCE");
-//		KTB_ALLOW_INTERFERENCE = Boolean.parseBoolean(tvt.getProperty("KTBAllowInterference", "False"));
-//		KTB_ALLOW_POTIONS = Boolean.parseBoolean(tvt.getProperty("KTBAllowPotions", "False"));
-//		KTB_ALLOW_SUMMON = Boolean.parseBoolean(tvt.getProperty("KTBAllowSummon", "False"));
-//		KTB_ON_START_REMOVE_ALL_EFFECTS = Boolean.parseBoolean(tvt.getProperty("KTBOnStartRemoveAllEffects", "True"));
-//		KTB_ON_START_UNSUMMON_PET = Boolean.parseBoolean(tvt.getProperty("KTBOnStartUnsummonPet", "True"));
-//		KTB_REVIVE_RECOVERY = Boolean.parseBoolean(tvt.getProperty("KTBReviveRecovery", "False"));
-//		KTB_ANNOUNCE_TEAM_STATS = Boolean.parseBoolean(tvt.getProperty("KTBAnnounceTeamStats", "False"));
-//		KTB_ANNOUNCE_REWARD = Boolean.parseBoolean(tvt.getProperty("KTBAnnounceReward", "False"));
-//		KTB_ANNOUNCE_LVL = Boolean.parseBoolean(tvt.getProperty("KTBAnnounceLevel", "False"));
-//		KTB_PRICE_NO_KILLS = Boolean.parseBoolean(tvt.getProperty("KTBPriceNoKills", "False"));
-//		KTB_JOIN_CURSED = Boolean.parseBoolean(tvt.getProperty("KTBJoinWithCursedWeapon", "True"));
-//		KTB_COMMAND = Boolean.parseBoolean(tvt.getProperty("KTBCommand", "True"));
-//		KTB_REVIVE_DELAY = Long.parseLong(tvt.getProperty("KTBReviveDelay", "20000"));
-//		if (KTB_REVIVE_DELAY < 1000)
-//			KTB_REVIVE_DELAY = 1000; // can't be set less then 1 second
-//		KTB_OPEN_FORT_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBOpenFortDoors", "False"));
-//		KTB_CLOSE_FORT_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBCloseFortDoors", "False"));
-//		KTB_OPEN_ADEN_COLOSSEUM_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBOpenAdenColosseumDoors", "False"));
-//		KTB_CLOSE_ADEN_COLOSSEUM_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBCloseAdenColosseumDoors", "False"));
-//		KTB_TOP_KILLER_REWARD = Integer.parseInt(tvt.getProperty("KTBTopKillerRewardId", "5575"));
-//		KTB_TOP_KILLER_QTY = Integer.parseInt(tvt.getProperty("KTBTopKillerRewardQty", "2000000"));
-//		KTB_AURA = Boolean.parseBoolean(tvt.getProperty("KTBAura", "False"));
-//		KTB_STATS_LOGGER = Boolean.parseBoolean(tvt.getProperty("KTBStatsLogger", "true"));
-//		Allow_Same_HWID_On_KTB = Boolean.parseBoolean(tvt.getProperty("SameHWIDOnKTB", "true"));
-//		
-//		SCREN_MSG = Boolean.parseBoolean(tvt.getProperty("KTBScreenMsg", "false"));
-//		
-//		KTB_OBSERVER_X = Integer.parseInt(tvt.getProperty("ObserverLocx", "83400"));
-//		KTB_OBSERVER_Y = Integer.parseInt(tvt.getProperty("ObserverLocy", "-16296"));
-//		KTB_OBSERVER_Z = Integer.parseInt(tvt.getProperty("ObserverLocz", "-1888"));
-//		
-//		KTB_REVIVE = new ArrayList<>();
-//		String[] locationsKTB = tvt.getProperty("KTBRevive", "82698,148638,-3473;82698,148638,-3473").split(";");
-//		for (String element : locationsKTB)
-//		{
-//			int x = Integer.parseInt(element.split(",")[0]);
-//			int y = Integer.parseInt(element.split(",")[1]);
-//			int z = Integer.parseInt(element.split(",")[2]);
-//			KTB_REVIVE.add(new Location(x, y, z));
-//		}
-//		
-//		KTB_BOSS_SPAWN = new ArrayList<>();
-//		String[] locationsBOSS = tvt.getProperty("KTBBossSpawn", "82698,148638,-3473;82698,148638,-3473").split(";");
-//		for (String element : locationsBOSS)
-//		{
-//			int x = Integer.parseInt(element.split(",")[0]);
-//			int y = Integer.parseInt(element.split(",")[1]);
-//			int z = Integer.parseInt(element.split(",")[2]);
-//			KTB_BOSS_SPAWN.add(new Location(x, y, z));
-//		}
-//	}
+	// private static final void loadKTB()
+	// {
+	// final ExProperties tvt = initProperties(Config.KTB_FILE);
+	//
+	// KTB_EVENT_ENABLED = Boolean.parseBoolean(tvt.getProperty("KTBEventEnabled", "false"));
+	//
+	// KTB_SKILL_PROTECT = Boolean.parseBoolean(tvt.getProperty("KTBSkillProtect", "false"));
+	// for (String id : tvt.getProperty("KTBDisableSkillList", "0").split(","))
+	// {
+	// KTB_SKILL_LIST.add(Integer.parseInt(id));
+	// }
+	// DEBUG_KTB = tvt.getProperty("DebugKTB", true);
+	// KTB_EVEN_TEAMS = tvt.getProperty("KTBEvenTeams", "BALANCE");
+	// KTB_ALLOW_INTERFERENCE = Boolean.parseBoolean(tvt.getProperty("KTBAllowInterference", "False"));
+	// KTB_ALLOW_POTIONS = Boolean.parseBoolean(tvt.getProperty("KTBAllowPotions", "False"));
+	// KTB_ALLOW_SUMMON = Boolean.parseBoolean(tvt.getProperty("KTBAllowSummon", "False"));
+	// KTB_ON_START_REMOVE_ALL_EFFECTS = Boolean.parseBoolean(tvt.getProperty("KTBOnStartRemoveAllEffects", "True"));
+	// KTB_ON_START_UNSUMMON_PET = Boolean.parseBoolean(tvt.getProperty("KTBOnStartUnsummonPet", "True"));
+	// KTB_REVIVE_RECOVERY = Boolean.parseBoolean(tvt.getProperty("KTBReviveRecovery", "False"));
+	// KTB_ANNOUNCE_TEAM_STATS = Boolean.parseBoolean(tvt.getProperty("KTBAnnounceTeamStats", "False"));
+	// KTB_ANNOUNCE_REWARD = Boolean.parseBoolean(tvt.getProperty("KTBAnnounceReward", "False"));
+	// KTB_ANNOUNCE_LVL = Boolean.parseBoolean(tvt.getProperty("KTBAnnounceLevel", "False"));
+	// KTB_PRICE_NO_KILLS = Boolean.parseBoolean(tvt.getProperty("KTBPriceNoKills", "False"));
+	// KTB_JOIN_CURSED = Boolean.parseBoolean(tvt.getProperty("KTBJoinWithCursedWeapon", "True"));
+	// KTB_COMMAND = Boolean.parseBoolean(tvt.getProperty("KTBCommand", "True"));
+	// KTB_REVIVE_DELAY = Long.parseLong(tvt.getProperty("KTBReviveDelay", "20000"));
+	// if (KTB_REVIVE_DELAY < 1000)
+	// KTB_REVIVE_DELAY = 1000; // can't be set less then 1 second
+	// KTB_OPEN_FORT_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBOpenFortDoors", "False"));
+	// KTB_CLOSE_FORT_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBCloseFortDoors", "False"));
+	// KTB_OPEN_ADEN_COLOSSEUM_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBOpenAdenColosseumDoors", "False"));
+	// KTB_CLOSE_ADEN_COLOSSEUM_DOORS = Boolean.parseBoolean(tvt.getProperty("KTBCloseAdenColosseumDoors", "False"));
+	// KTB_TOP_KILLER_REWARD = Integer.parseInt(tvt.getProperty("KTBTopKillerRewardId", "5575"));
+	// KTB_TOP_KILLER_QTY = Integer.parseInt(tvt.getProperty("KTBTopKillerRewardQty", "2000000"));
+	// KTB_AURA = Boolean.parseBoolean(tvt.getProperty("KTBAura", "False"));
+	// KTB_STATS_LOGGER = Boolean.parseBoolean(tvt.getProperty("KTBStatsLogger", "true"));
+	// Allow_Same_HWID_On_KTB = Boolean.parseBoolean(tvt.getProperty("SameHWIDOnKTB", "true"));
+	//
+	// SCREN_MSG = Boolean.parseBoolean(tvt.getProperty("KTBScreenMsg", "false"));
+	//
+	// KTB_OBSERVER_X = Integer.parseInt(tvt.getProperty("ObserverLocx", "83400"));
+	// KTB_OBSERVER_Y = Integer.parseInt(tvt.getProperty("ObserverLocy", "-16296"));
+	// KTB_OBSERVER_Z = Integer.parseInt(tvt.getProperty("ObserverLocz", "-1888"));
+	//
+	// KTB_REVIVE = new ArrayList<>();
+	// String[] locationsKTB = tvt.getProperty("KTBRevive", "82698,148638,-3473;82698,148638,-3473").split(";");
+	// for (String element : locationsKTB)
+	// {
+	// int x = Integer.parseInt(element.split(",")[0]);
+	// int y = Integer.parseInt(element.split(",")[1]);
+	// int z = Integer.parseInt(element.split(",")[2]);
+	// KTB_REVIVE.add(new Location(x, y, z));
+	// }
+	//
+	// KTB_BOSS_SPAWN = new ArrayList<>();
+	// String[] locationsBOSS = tvt.getProperty("KTBBossSpawn", "82698,148638,-3473;82698,148638,-3473").split(";");
+	// for (String element : locationsBOSS)
+	// {
+	// int x = Integer.parseInt(element.split(",")[0]);
+	// int y = Integer.parseInt(element.split(",")[1]);
+	// int z = Integer.parseInt(element.split(",")[2]);
+	// KTB_BOSS_SPAWN.add(new Location(x, y, z));
+	// }
+	// }
 	
 	private static final void loadSkin()
 	{
@@ -3144,7 +3278,7 @@ public final class Config
 		loadDomination();
 		loadDM();
 		loadDie();
-//		loadKTB();
+		// loadKTB();
 		loadAutoFarm();
 		loadSkin();
 		loadRaidCustomDrop();

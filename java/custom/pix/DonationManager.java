@@ -63,6 +63,12 @@ public class DonationManager
 	private static final String DELETE_PURCHASE = "DELETE FROM donations WHERE purchase_id=?";
 	private static final String UPDATE_PURCHASE = "UPDATE donations SET hidden=?, status=? WHERE purchase_id=?";
 
+	// Troca de status atômica: só muda se o status atual no banco for o esperado (impede entrega duplicada)
+	private static final String TRANSITION_PURCHASE = "UPDATE donations SET status=? WHERE purchase_id=? AND status=?";
+
+	// Limite de unidades por compra. Ajuste conforme a sua loja.
+	private static final int MAX_QUANTITY = 999;
+
 	private static final String HTML_PATH = "data/html/mods/pix/";
 	private static final String HTML_EMPTY_TABLE = "<table><tr><td></td></tr><tr><td width=70>---</td><td width=115---</td><td width=50>---</td><td width=75>---</td></tr><tr><td></td></tr></table>";
 	private static final String HTML_LINE = "<img src=L2UI.SquareGray width=280 height=1>";
@@ -160,8 +166,12 @@ public class DonationManager
 			if (p.getStatus() != PurchaseStatus.OFFLINE)
 				continue;
 
+			// Só entrega quem conseguir mudar OFFLINE -> COMPLETED no banco
+			if (!transition(p, PurchaseStatus.OFFLINE, PurchaseStatus.COMPLETED))
+				continue;
+
+			LOGGER.info("Compra #{} entregue (offline): player {}, item {} x{}.", p.getId(), player.getName(), p.getProductId(), p.getQuantity());
 			player.addItem("DonationManager", p.getProductId(), p.getQuantity(), player, true);
-			p.changeStatus(PurchaseStatus.COMPLETED);
 		}
 	}
 	
@@ -244,10 +254,6 @@ public class DonationManager
 		{
 		    e.printStackTrace();
 		}
-//		catch (Exception e)
-//		{
-//			LOGGER.error("Nao foi possivel criar a Purchase id #{} para o player {}.", e, p.getId(), CharNameTable.getInstance().getNameById(p.getPlayerId()));
-//		}
 	}
 	
 	private static void updateMpId(Purchase p)
@@ -263,6 +269,41 @@ public class DonationManager
 	    {
 	        e.printStackTrace();
 	    }
+	}
+
+	/**
+	 * Troca o status de forma atômica no banco: o UPDATE só afeta a linha se o status atual for o esperado.
+	 * Só quem receber true pode entregar o item, mesmo com checks simultâneos ou repetidos.
+	 * @param p 
+	 * @param from 
+	 * @param to 
+	 * @return 
+	 */
+	private static boolean transition(Purchase p, PurchaseStatus from, PurchaseStatus to)
+	{
+		synchronized (p)
+		{
+			if (p.getStatus() != from)
+				return false;
+
+			try (Connection con = L2DatabaseFactory.getInstance().getConnection();
+				PreparedStatement ps = con.prepareStatement(TRANSITION_PURCHASE))
+			{
+				ps.setString(1, to.name());
+				ps.setInt(2, p.getId());
+				ps.setString(3, from.name());
+				if (ps.executeUpdate() != 1)
+					return false;
+			}
+			catch (Exception e)
+			{
+				LOGGER.error("Falha ao mudar a Purchase #{} de {} para {}.", e, p.getId(), from, to);
+				return false;
+			}
+
+			p.setStatusInMemory(to);
+			return true;
+		}
 	}
 
 	private static List<Purchase> getPurchases(int playerId)
@@ -460,18 +501,52 @@ public class DonationManager
 			return;
 
 		final PurchaseStatus pStatus = p.getStatus();
-		p.changeStatus(PurchaseStatus.CANCELED);
-		player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
 
-		if (pStatus == PurchaseStatus.WAITING)
+		// Só dá para cancelar o que ainda não foi pago/entregue (antes cancelava até COMPLETED)
+		if (pStatus != PurchaseStatus.CREATED && pStatus != PurchaseStatus.WAITING)
+		{
 			showPurchaseStatusWindow(player, p);
-		else
-			showPurchaseHistoryWindow(player, 1);
+			return;
+		}
+
+		// Sem pagamento criado no Mercado Pago: basta cancelar localmente
+		if (p.getMpId() == 0)
+		{
+			if (transition(p, pStatus, PurchaseStatus.CANCELED))
+			{
+				player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
+				showPurchaseHistoryWindow(player, 1);
+			}
+			return;
+		}
+
+		// Com pagamento criado: cancela também no Mercado Pago, para o QR Code deixar de ser pagável.
+		// Se o Mercado Pago recusar (ex.: já foi pago), a compra continua WAITING e o jogador pode clicar em Verificar.
+		ThreadPool.execute(() ->
+		{
+			try
+			{
+				new PaymentClient().cancel(p.getMpId());
+			}
+			catch (Exception e)
+			{
+				LOGGER.warn("Nao foi possivel cancelar o pagamento #{} no Mercado Pago.", p.getId());
+				player.sendMessage("Nao foi possivel cancelar agora. Se voce ja pagou, clique em Verificar.");
+				return;
+			}
+
+			if (transition(p, PurchaseStatus.WAITING, PurchaseStatus.CANCELED))
+			{
+				player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
+				showPurchaseStatusWindow(player, p);
+			}
+		});
 	}
 
 	private void newPurchase(Player player, int itemId, int quantity)
 	{
-		if (quantity == 0)
+		// A quantidade vem do bypass (o cliente pode forjar): valida limites antes de qualquer coisa
+		if (quantity < 1 || quantity > MAX_QUANTITY)
 		{
 			showCustomWindow(player, "index.htm");
 			return;
@@ -497,6 +572,14 @@ public class DonationManager
 		if (item == null)
 			return;
 
+		// Preço configurado precisa ser positivo e o total não pode estourar o int
+		final int unitPrice = Config.DONATION_PURCHASABLE_ITEMS.get(itemId);
+		if (unitPrice < 1 || (long) unitPrice * quantity > Integer.MAX_VALUE)
+		{
+			LOGGER.warn("Compra recusada (preco invalido). Player: {}, item: {}, qtd: {}.", player.getName(), itemId, quantity);
+			return;
+		}
+
 		final int purchaseId = IdFactory.getInstance().getNextId();
 		final Purchase purchase = new Purchase(purchaseId, player.getObjectId(), itemId, quantity, email, PurchaseStatus.CREATED);
 		DonationTaskManager.getInstance().add(purchase);
@@ -517,6 +600,7 @@ public class DonationManager
 			html.setItemId(9999);
 			html.replace("%icon%", IconsTable.getInstance().getItemIcon(p.getProductId()));
 			html.replace("%resume%", p.toString());
+			LOGGER.info("Compra #{} entregue: player {}, item {} x{}, mp_id {}.", p.getId(), player.getName(), p.getProductId(), p.getQuantity(), p.getMpId());
 			player.addItem("DonationManager", p.getProductId(), p.getQuantity(), player, true);
 			player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
 			player.sendPacket(html);
@@ -541,7 +625,8 @@ public class DonationManager
 			return;
 		}
 
-		if (purchase.getStatus() == PurchaseStatus.EXPIRED)
+		// Qualquer status diferente de WAITING (EXPIRED, COMPLETED, CANCELED...) não precisa consultar o Mercado Pago
+		if (purchase.getStatus() != PurchaseStatus.WAITING)
 		{
 			showPurchaseStatusWindow(player, purchase);
 			return;
@@ -568,7 +653,7 @@ public class DonationManager
 			return;
 		}
 
-		if (payment.getTransactionDetails().getTotalPaidAmount().intValue() != p.getPrice())
+		if (payment.getTransactionAmount() == null || payment.getTransactionAmount().compareTo(BigDecimal.valueOf(p.getPrice())) != 0)
 		{
 			p.changeStatus(PurchaseStatus.FAILED);
 			showCustomWindow(player, "exception.htm");
@@ -615,41 +700,77 @@ public class DonationManager
 			return;
 		}
 
-		if (p.getQrCode() == null)
+		// Só uma compra aguardando pagamento pode ser avaliada aqui. Compras já concluídas/canceladas nunca são reentregues.
+		if (p.getStatus() != PurchaseStatus.WAITING)
 		{
-			p.setQrCode(payment.getPointOfInteraction().getTransactionData().getQrCode());
-			showQrCodeWindow(player, p.getId());
+			if (player != null)
+				showPurchaseStatusWindow(player, p);
+			return;
+		}
+
+		// QR perdido (ex.: reinício do servidor) só é recarregado se o pagamento ainda estiver pendente.
+		// Se já foi aprovado, segue direto para a entrega.
+		if (p.getQrCode() == null && "pending".equals(payment.getStatus()))
+		{
+			if (payment.getPointOfInteraction() != null && payment.getPointOfInteraction().getTransactionData() != null)
+			{
+				p.setQrCode(payment.getPointOfInteraction().getTransactionData().getQrCode());
+				if (player != null)
+					showQrCodeWindow(player, p.getId());
+			}
 			return;
 		}
 
 		// https://www.mercadopago.com.br/developers/pt/docs/checkout-api/response-handling/collection-results
-		// Poderiamos utilizar o binary_mode?
 		switch (payment.getStatus())
 		{
 			case "in_mediation":
 			case "cancelled":
 			case "refunded":
 			case "charged_back":
-				player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
-				p.changeStatus(PurchaseStatus.CANCELED);
-				showPurchaseStatusWindow(player, p);
+				if (transition(p, PurchaseStatus.WAITING, PurchaseStatus.CANCELED) && player != null)
+				{
+					player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
+					showPurchaseStatusWindow(player, p);
+				}
 				break;
 
 			case "pending":
 			case "in_process":
 			case "authorized":
-				showPurchaseStatusWindow(player, p);
+				if (player != null)
+					showPurchaseStatusWindow(player, p);
 				break;
 
 			case "rejected":
-				player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
-				p.changeStatus(PurchaseStatus.CLOSED);
-				showPurchaseStatusWindow(player, p);
+				if (transition(p, PurchaseStatus.WAITING, PurchaseStatus.CLOSED) && player != null)
+				{
+					player.sendPacket(TutorialCloseHtml.STATIC_PACKET);
+					showPurchaseStatusWindow(player, p);
+				}
 				break;
 
 			case "approved":
-				p.changeStatus(PurchaseStatus.COMPLETED);
-				onCompletedPayment(player, p);
+				// O valor pago precisa bater com o preço calculado pelo servidor
+				if (payment.getTransactionAmount() == null || payment.getTransactionAmount().compareTo(BigDecimal.valueOf(p.getPrice())) != 0)
+				{
+					LOGGER.warn("Pagamento #{} aprovado com valor diferente do esperado ({} != {}).", p.getId(), payment.getTransactionAmount(), p.getPrice());
+					transition(p, PurchaseStatus.WAITING, PurchaseStatus.FAILED);
+					if (player != null)
+						showPurchaseStatusWindow(player, p);
+					break;
+				}
+
+				// Jogador offline: guarda como OFFLINE e entrega no próximo login
+				if (player == null)
+				{
+					transition(p, PurchaseStatus.WAITING, PurchaseStatus.OFFLINE);
+					break;
+				}
+
+				// Só entrega quem conseguir mudar WAITING -> COMPLETED no banco
+				if (transition(p, PurchaseStatus.WAITING, PurchaseStatus.COMPLETED))
+					onCompletedPayment(player, p);
 				break;
 		}
 	}

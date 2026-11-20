@@ -100,8 +100,8 @@ public class L2TownZone extends L2SpawnZone
 							if (player1.isGM() || player.isGM())
 								continue;
 							
-							if (((FakePlayer) player1).isFakePvp() || ((FakePlayer) player).isFakePvp())
-								continue;
+							if (isFakePvp(player1) || isFakePvp(player))
+							    continue;
 							
 							if (!(player1.isInGludin() || player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON)))
 								continue;
@@ -213,5 +213,10 @@ public class L2TownZone extends L2SpawnZone
 		if (size == 1)
 			return _respawnPoints.get(0);
 		return _respawnPoints.get(Rnd.get(size));
+	}
+	
+	private static boolean isFakePvp(Player p)
+	{
+	    return p instanceof FakePlayer && ((FakePlayer) p).isFakePvp();
 	}
 }

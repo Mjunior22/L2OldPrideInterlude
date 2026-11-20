@@ -24,7 +24,10 @@ import net.sf.l2j.gameserver.handler.usercommandhandlers.DieEvent;
 import net.sf.l2j.gameserver.handler.usercommandhandlers.PromoCode;
 import net.sf.l2j.gameserver.handler.usercommandhandlers.Wedding;
 
+import custom.mpcard.MpCard;
+import custom.paypal.PayPal;
 import custom.pix.Pix;
+import custom.stripepay.StripePay;
 
 public class VoicedCommandHandler
 {
@@ -51,8 +54,17 @@ public class VoicedCommandHandler
 		registerHandler(new AutoEnchant());
 		registerHandler(new AchievementsVoiced());
 		
-		if(Config.ENABLE_PIX_MOD)
+		if (Config.ENABLE_PIX_MOD)
 			registerHandler(new Pix());
+		
+		if (Config.ENABLE_PAYPAL_MOD)
+			registerHandler(new PayPal());
+		
+		if (Config.ENABLE_MPCARD_MOD)
+			registerHandler(new MpCard());
+		
+		if (Config.ENABLE_STRIPE_MOD)
+			registerHandler(new StripePay());
 	}
 	
 	public IVoicedCommandHandler getHandler(String voicedCommand)

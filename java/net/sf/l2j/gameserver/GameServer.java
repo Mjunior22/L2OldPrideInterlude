@@ -112,10 +112,13 @@ import net.sf.l2j.gameserver.xmlfactory.XMLDocumentFactory;
 import net.sf.l2j.util.DeadLockDetector;
 import net.sf.l2j.util.IPv4Filter;
 
+import custom.mpcard.CardDonationManager;
+import custom.paypal.PayPalDonationManager;
 import custom.pix.DonationManager;
 import custom.pix.DonationTaskManager;
 import custom.raidlist.RaidRotationManager;
 import custom.rankicon.RankIconManager;
+import custom.stripepay.StripeDonationManager;
 import events.manager.oldpride.CTFEventManager;
 import events.manager.oldpride.DMEventManager;
 import events.manager.oldpride.DomiEventManager;
@@ -394,17 +397,45 @@ public class GameServer
 		FakePlayerConfig.init();
 		FakePlayerManager.initialise();
 		
+		StringUtil.printSection("PayPal Mod");
+		if (Config.ENABLE_PAYPAL_MOD)
+		{
+			PayPalDonationManager.getInstance();
+			_log.config("PayPal Mod is Enabled.");
+		}
+		else
+			_log.config("PayPal Mod is Disabled.");
+		
 		StringUtil.printSection("Pix Mod");
-		if(Config.ENABLE_PIX_MOD)
+		if (Config.ENABLE_PIX_MOD)
 		{
 			DonationTaskManager.getInstance();
-			DonationManager.getInstance();	
+			DonationManager.getInstance();
 			_log.config("PIX Mod is Enabled.");
 		}
 		else
 		{
 			_log.config("PIX Mod is Disabled.");
 		}
+		
+		StringUtil.printSection("Card Mod");
+		if (Config.ENABLE_MPCARD_MOD)
+		{
+			CardDonationManager.getInstance();
+			_log.config("Card Mod is Enabled.");
+		}
+		else
+			_log.config("Card Mod is Disabled.");
+		
+		StringUtil.printSection("Stripe Mod");
+		
+		if (Config.ENABLE_STRIPE_MOD)
+		{
+			StripeDonationManager.getInstance();
+			_log.config("Stripe Mod is Enabled.");
+		}
+		else
+			_log.config("Stripe Mod is Disabled.");
 		
 		StringUtil.printSection("Donate Giver");
 		DonateGiverTaskManager.getInstance();

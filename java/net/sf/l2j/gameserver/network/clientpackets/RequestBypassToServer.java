@@ -30,7 +30,10 @@ import net.sf.l2j.gameserver.network.serverpackets.ExHeroList;
 import net.sf.l2j.gameserver.network.serverpackets.MagicSkillUse;
 import net.sf.l2j.gameserver.network.serverpackets.NpcHtmlMessage;
 
+import custom.mpcard.CardDonationManager;
+import custom.paypal.PayPalDonationManager;
 import custom.pix.DonationManager;
+import custom.stripepay.StripeDonationManager;
 import events.oldpride.CTF;
 import events.oldpride.DM;
 import events.oldpride.DieEventManager;
@@ -492,6 +495,12 @@ public final class RequestBypassToServer extends L2GameClientPacket
 			}
 			else if (_command.startsWith("pix"))
 				DonationManager.getInstance().handleBypass(activeChar, _command.substring(4));
+			else if (Config.ENABLE_PAYPAL_MOD && _command.startsWith("paypal"))
+				PayPalDonationManager.getInstance().handleBypass(activeChar, _command.substring(6).trim());
+			else if (Config.ENABLE_MPCARD_MOD && _command.startsWith("mpcard"))
+				CardDonationManager.getInstance().handleBypass(activeChar, _command.substring(6).trim());
+			else if (Config.ENABLE_STRIPE_MOD && _command.startsWith("stripe"))
+				StripeDonationManager.getInstance().handleBypass(activeChar, _command.substring(6).trim());
 		}
 		catch (Exception e)
 		{
