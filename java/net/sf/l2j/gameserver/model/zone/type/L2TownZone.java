@@ -100,8 +100,8 @@ public class L2TownZone extends L2SpawnZone
 							if (player1.isGM() || player.isGM())
 								continue;
 							
-							if (isFakePvp(player1) || isFakePvp(player))
-							    continue;
+//							if (isFakePvp(player1) || isFakePvp(player))
+//							    continue;
 							
 							if (!(player1.isInGludin() || player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON)))
 								continue;

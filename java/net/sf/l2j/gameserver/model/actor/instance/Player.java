@@ -12191,12 +12191,15 @@ public class Player extends Playable
 			
 			if (!(target instanceof FakePlayer))
 			{
-				if (target.getObjectId() == _prevKill1 || target.getObjectId() == _prevKill2)
+				if (!target.isInGludin())
 				{
-					passedProtections = false;
-					msg = "You have already received a pvp from this player.";
-					sendMessage(msg);
-					return;
+					if (target.getObjectId() == _prevKill1 || target.getObjectId() == _prevKill2)
+					{
+						passedProtections = false;
+						msg = "You have already received a pvp from this player.";
+						sendMessage(msg);
+						return;
+					}
 				}
 				
 				if (target.getIP().equalsIgnoreCase(_prev1IP) || target.getIP().equalsIgnoreCase(_prev2IP))
@@ -15373,7 +15376,7 @@ public class Player extends Playable
 	public long getRemainingTradeTime()
 	{
 		long currentTime = System.currentTimeMillis();
-		long remaining = 24 * 60 * 60 * 1000 - (currentTime - _charCreationTime);
+		long remaining = 12 * 60 * 60 * 1000 - (currentTime - _charCreationTime);
 		
 		return Math.max(0, remaining);
 	}

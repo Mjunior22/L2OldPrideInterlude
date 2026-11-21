@@ -628,30 +628,63 @@ public class EnterWorld extends L2GameClientPacket
 							_player.teleToLocation(TeleportType.TOWN);
 						}
 						
+//						if (Config.HWID_ZONES_CHECK)
+//						{
+//							String hwid = _player.getHWID();
+//							for (Player player1 : World.getInstance().getPlayers())
+//							{
+//								if (player1 == _player)
+//									continue;
+//								
+//								if (player1.isGM() || _player.isGM())
+//									continue;
+//								
+//								if (!(player1.isInGludin() || player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON)))
+//									continue;
+//								
+//								String plr_hwid = player1.getHWID();
+//								if (plr_hwid.equalsIgnoreCase(hwid))
+//								{
+//									player1.setIsPendingRevive(true);
+//									player1.setIsInGludin(false);
+//									PvpFlagTaskManager.getInstance().add(player1, Config.PVP_NORMAL_TIME);
+//									player1.getActingPlayer().broadcastUserInfo();
+//									player1.sendMessage("You have another window in a hwid restricted zone.");
+//									player1.teleToLocation(83380, 148107, -3404, 0);
+//									break;
+//								}
+//							}
+//						}
+						
 						if (Config.HWID_ZONES_CHECK)
 						{
-							String hwid = _player.getHWID();
-							for (Player player1 : World.getInstance().getPlayers())
+							// Só compara se quem acabou de logar está, ele mesmo, numa zona restrita.
+							// Gludin não entra aqui: quem loga em Gludin já foi mandado pra cidade pelo bloco acima.
+							if (_player.isInsideZone(ZoneId.FARM) || _player.isInsideZone(ZoneId.DUNGEON))
 							{
-								if (player1 == _player)
-									continue;
-								
-								if (player1.isGM() || _player.isGM())
-									continue;
-								
-								if (!(player1.isInGludin() || player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON)))
-									continue;
-								
-								String plr_hwid = player1.getHWID();
-								if (plr_hwid.equalsIgnoreCase(hwid))
+								String hwid = _player.getHWID();
+								for (Player player1 : World.getInstance().getPlayers())
 								{
-									player1.setIsPendingRevive(true);
-									player1.setIsInGludin(false);
-									PvpFlagTaskManager.getInstance().add(player1, Config.PVP_NORMAL_TIME);
-									player1.getActingPlayer().broadcastUserInfo();
-									player1.sendMessage("You have another window in a hwid restricted zone.");
-									player1.teleToLocation(83380, 148107, -3404, 0);
-									break;
+									if (player1 == _player)
+										continue;
+									
+									if (player1.isGM() || _player.isGM())
+										continue;
+									
+									if (!(player1.isInGludin() || player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON)))
+										continue;
+									
+									String plr_hwid = player1.getHWID();
+									if (plr_hwid.equalsIgnoreCase(hwid))
+									{
+										player1.setIsPendingRevive(true);
+										player1.setIsInGludin(false);
+										PvpFlagTaskManager.getInstance().add(player1, Config.PVP_NORMAL_TIME);
+										player1.getActingPlayer().broadcastUserInfo();
+										player1.sendMessage("You have another window in a hwid restricted zone.");
+										player1.teleToLocation(83380, 148107, -3404, 0);
+										break;
+									}
 								}
 							}
 						}

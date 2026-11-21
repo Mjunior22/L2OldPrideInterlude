@@ -105,7 +105,7 @@ public class EffectTargetMe extends L2Effect
 				getEffected().getAI().setIntention(CtrlIntention.IDLE);
 			}
 			
-			((Playable) getEffected()).setLockedTarget(getEffector(), getPeriod() * GameTimeTaskManager.getGameTicks());
+			((Playable) getEffected()).setLockedTarget(getEffector(), getPeriod() * GameTimeTaskManager.TICKS_PER_SECOND);
 			return true;
 		}
 		return false;
@@ -114,6 +114,13 @@ public class EffectTargetMe extends L2Effect
 	@Override
 	public void onExit()
 	{
+		// Libera o lock quando o efeito acaba ou é removido
+		if (getEffected() instanceof Playable)
+		{
+			final Playable effected = (Playable) getEffected();
+			if (effected.getLockedTarget() == getEffector())
+				effected.setLockedTarget(null, 0);
+		}
 	}
 
 	@Override
