@@ -12143,6 +12143,37 @@ public class Player extends Playable
 		return getClient().getHWID();
 	}
 	
+	/**
+	 * HWID windows (other than this one) that are inside a HWID restricted area : Gludin, farm zones or dungeon zones.<br>
+	 * Empty HWID means "unknown", never "same computer". GMs are ignored on both sides.
+	 * @param ignoreFunEvent : if true, players in a fun event (this one or the other) are ignored.
+	 * @return the other players that share this player's HWID in restricted areas.
+	 */
+	public List<Player> getHwidWindowsInRestrictedZones(boolean ignoreFunEvent)
+	{
+		final List<Player> list = new ArrayList<>();
+		
+		final String hwid = getHWID();
+		if (hwid == null || hwid.isEmpty() || isGM())
+			return list;
+		
+		for (Player p : World.getInstance().getPlayers())
+		{
+			if (p == this || p.isGM())
+				continue;
+			
+			if (ignoreFunEvent && (isInFunEvent() || p.isInFunEvent()))
+				continue;
+			
+			if (!(p.isInGludin() || p.isInsideZone(ZoneId.FARM) || p.isInsideZone(ZoneId.DUNGEON)))
+				continue;
+			
+			if (hwid.equalsIgnoreCase(p.getHWID()))
+				list.add(p);
+		}
+		return list;
+	}
+	
 	public boolean isInClanwarWith(Player target)
 	{
 		if (target == null)

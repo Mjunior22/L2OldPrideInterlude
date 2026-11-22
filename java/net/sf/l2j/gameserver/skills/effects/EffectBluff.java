@@ -19,13 +19,13 @@ public class EffectBluff extends L2Effect
 	{
 		super(env, template, ignoreBoost);
 	}
-
+	
 	@Override
 	public L2EffectType getEffectType()
 	{
 		return L2EffectType.BLUFF;
 	}
- 
+	
 	@Override
 	public boolean onStart()
 	{
@@ -43,36 +43,38 @@ public class EffectBluff extends L2Effect
 		}
 		
 		// ===== NOVO SISTEMA DE PROTEÇÃO PVP =====
-        if (getEffected() instanceof Player && getEffector() instanceof Player)
-        {
-            Player target = (Player) getEffected();
-            Player attacker = (Player) getEffector();
-            
-            // Verifica se pode aplicar o efeito
-            if (!PvpProtectionManager.getInstance().canApplyEffect(target, attacker, PvpProtectionManager.EffectType.STUN))
-                return false; // Não aplica o efeito
-            
-            // Registra que o efeito foi aplicado
-            PvpProtectionManager.getInstance().registerEffect(target, PvpProtectionManager.EffectType.STUN);
-        }
-        // ===== FIM DO NOVO SISTEMA =====
+		if (getEffected() instanceof Player && getEffector() instanceof Player)
+		{
+			Player target = (Player) getEffected();
+			Player attacker = (Player) getEffector();
+			
+			// Verifica se pode aplicar o efeito
+			if (!PvpProtectionManager.getInstance().canApplyEffect(target, attacker, PvpProtectionManager.EffectType.STUN))
+				return false; // Não aplica o efeito
+				
+			// Registra que o efeito foi aplicado
+			PvpProtectionManager.getInstance().registerEffect(target, PvpProtectionManager.EffectType.STUN);
+		}
+		// ===== FIM DO NOVO SISTEMA =====
 		
 		if (getEffected() instanceof Player)
-			getEffected().getActingPlayer().setIsSelectingTarget(10); 
+			getEffected().getActingPlayer().setIsSelectingTarget(10);
 		
 		if (getEffected() instanceof Playable)
 			getEffected().setTarget(null);
 		
 		getEffected().abortAttack();
-		getEffected().getAI().setIntention(CtrlIntention.ACTIVE);
 		getEffected().abortCast();
+		if (getEffected().hasAI())
+            getEffected().getAI().setIntention(CtrlIntention.IDLE);
+		// OLHAR ESSE super.onStart();
 		super.onStart();
 		getEffected().broadcastPacket(new StartRotation(getEffected().getObjectId(), getEffected().getHeading(), 1, 65535));
 		getEffected().broadcastPacket(new StopRotation(getEffected().getObjectId(), getEffector().getHeading(), 65535));
-		getEffected().setHeading(getEffector().getHeading());
+		getEffected().getPosition().setHeading(getEffector().getHeading());
 		return true;
 	}
-
+	
 	@Override
 	public boolean onActionTime()
 	{

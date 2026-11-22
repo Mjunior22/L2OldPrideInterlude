@@ -1,0 +1,320 @@
+diff --git a/java/inertia/model/Inertia.java b/java/inertia/model/Inertia.java
+index 979eb0c..39d3f53 100644
+--- a/java/inertia/model/Inertia.java
++++ b/java/inertia/model/Inertia.java
+@@ -261,29 +261,25 @@ public class Inertia implements Runnable
+ 			return; // pausa ações e NÃO consome crédito enquanto morto — _running continua true
+ 		}
+ 		
+-		if (Config.HWID_AUTOFARM_CHECK)
++		if (Config.HWID_AUTOFARM_CHECK && !player.isGM())
+ 		{
+-			try
++			// Safety net (limit lowered while running, or two sessions started at the same time) : the N sessions with the lowest objectId keep running.
++			final List<Inertia> others = getRunningSameHwid(player);
++			if (others.size() >= Config.HWID_AUTOFARM_MAX_WINDOWS)
+ 			{
+-				final String hwid = player.getHWID();
+-				for (final var autoChill : InertiaController.getInstance().getInertias().entrySet())
++				int ahead = 0;
++				for (final Inertia other : others)
++					if (other.getActivePlayer().getObjectId() < player.getObjectId())
++						ahead++;
++				
++				if (ahead >= Config.HWID_AUTOFARM_MAX_WINDOWS)
+ 				{
+-					if (autoChill.getValue().isRunning() && player != autoChill.getKey().getPlayer())
+-					{
+-						final String otherHwid = autoChill.getKey().getPlayer().getHWID();
+-						if (hwid.equalsIgnoreCase(otherHwid))
+-						{
+-							player.sendMessage("Your HWID is already using AutoFarm on a different session!");
+-							autoChill.getValue().setRunning(false);
+-							autoChill.getValue().render();
+-						}
+-					}
++					player.sendMessage("AutoFarm limit reached: max " + Config.HWID_AUTOFARM_MAX_WINDOWS + " window(s) per HWID.");
++					setRunning(false);
++					render();
++					return;
+ 				}
+ 			}
+-			catch (Exception e)
+-			{
+-				_log.info("Error validating HWID uniqueness: " + e.getMessage());
+-			}
+ 		}
+ 		
+ 		// VIP players don't consume autofarm time
+@@ -1246,8 +1242,45 @@ public class Inertia implements Runnable
+ 		return _running;
+ 	}
+ 	
++	/**
++	 * Other AutoFarm sessions currently running with the same HWID as the given player.<br>
++	 * Empty HWID means "unknown", never "same computer".
++	 * @param player : The player of this session.
++	 * @return the other running sessions that share the HWID.
++	 */
++	private List<Inertia> getRunningSameHwid(final Player player)
++	{
++		final List<Inertia> list = new ArrayList<>();
++		
++		final String hwid = player.getHWID();
++		if (hwid == null || hwid.isEmpty())
++			return list;
++		
++		for (final Inertia other : InertiaController.getInstance().getInertias().values())
++		{
++			if (other == this || !other._running)
++				continue;
++			
++			final Player otherPlayer = other.getActivePlayer();
++			if (otherPlayer != null && hwid.equalsIgnoreCase(otherPlayer.getHWID()))
++				list.add(other);
++		}
++		return list;
++	}
++	
+ 	public void setRunning(final boolean running)
+ 	{
++		if (running && Config.HWID_AUTOFARM_CHECK)
++		{
++			final Player hwidPlayer = getActivePlayer();
++			if (hwidPlayer != null && !hwidPlayer.isGM() && getRunningSameHwid(hwidPlayer).size() >= Config.HWID_AUTOFARM_MAX_WINDOWS)
++			{
++				_running = false;
++				hwidPlayer.sendMessage("AutoFarm limit reached: max " + Config.HWID_AUTOFARM_MAX_WINDOWS + " window(s) per HWID.");
++				return;
++			}
++		}
++		
+ 		_running = running;
+ 		
+ 		final Player player = getActivePlayer();
+diff --git a/java/net/sf/l2j/Config.java b/java/net/sf/l2j/Config.java
+index 7d91386..71a270f 100644
+--- a/java/net/sf/l2j/Config.java
++++ b/java/net/sf/l2j/Config.java
+@@ -796,6 +796,8 @@ public final class Config
+ 	public static boolean HWID_EVENTS_CHECK;
+ 	public static boolean HWID_AUTOFARM_CHECK;
+ 	public static boolean HWID_DUNGEONS_CHECK;
++	public static int HWID_ZONES_MAX_WINDOWS;
++	public static int HWID_AUTOFARM_MAX_WINDOWS;
+ 	
+ 	public static int MONSTER_SKILL_CHANCE;
+ 	public static int MONSTER_SKILL_SHORT_CHANCE;
+@@ -2456,6 +2458,8 @@ public final class Config
+ 		HWID_EVENTS_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwidevents_check", "true"));
+ 		HWID_AUTOFARM_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwidautofarm_check", "true"));
+ 		HWID_DUNGEONS_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwiddungeon_check", "true"));
++		HWID_ZONES_MAX_WINDOWS = Math.max(1, Integer.parseInt(l2jmega.getProperty("hwidzone_max_windows", "1")));
++		HWID_AUTOFARM_MAX_WINDOWS = Math.max(1, Integer.parseInt(l2jmega.getProperty("hwidautofarm_max_windows", "1")));
+ 		
+ 		MONSTER_SKILL_CHANCE = Integer.parseInt(l2jmega.getProperty("monster_skill_chance", "50"));
+ 		MONSTER_SKILL_SHORT_CHANCE = Integer.parseInt(l2jmega.getProperty("monster_skill_short_chance", "50"));
+diff --git a/java/net/sf/l2j/gameserver/model/actor/instance/Player.java b/java/net/sf/l2j/gameserver/model/actor/instance/Player.java
+index 61be5e9..61a77c4 100644
+--- a/java/net/sf/l2j/gameserver/model/actor/instance/Player.java
++++ b/java/net/sf/l2j/gameserver/model/actor/instance/Player.java
+@@ -12143,6 +12143,37 @@ public class Player extends Playable
+ 		return getClient().getHWID();
+ 	}
+ 	
++	/**
++	 * HWID windows (other than this one) that are inside a HWID restricted area : Gludin, farm zones or dungeon zones.<br>
++	 * Empty HWID means "unknown", never "same computer". GMs are ignored on both sides.
++	 * @param ignoreFunEvent : if true, players in a fun event (this one or the other) are ignored.
++	 * @return the other players that share this player's HWID in restricted areas.
++	 */
++	public List<Player> getHwidWindowsInRestrictedZones(boolean ignoreFunEvent)
++	{
++		final List<Player> list = new ArrayList<>();
++		
++		final String hwid = getHWID();
++		if (hwid == null || hwid.isEmpty() || isGM())
++			return list;
++		
++		for (Player p : World.getInstance().getPlayers())
++		{
++			if (p == this || p.isGM())
++				continue;
++			
++			if (ignoreFunEvent && (isInFunEvent() || p.isInFunEvent()))
++				continue;
++			
++			if (!(p.isInGludin() || p.isInsideZone(ZoneId.FARM) || p.isInsideZone(ZoneId.DUNGEON)))
++				continue;
++			
++			if (hwid.equalsIgnoreCase(p.getHWID()))
++				list.add(p);
++		}
++		return list;
++	}
++	
+ 	public boolean isInClanwarWith(Player target)
+ 	{
+ 		if (target == null)
+diff --git a/java/net/sf/l2j/gameserver/model/zone/type/L2DungeonZone.java b/java/net/sf/l2j/gameserver/model/zone/type/L2DungeonZone.java
+index 9eb1dc7..777de77 100644
+--- a/java/net/sf/l2j/gameserver/model/zone/type/L2DungeonZone.java
++++ b/java/net/sf/l2j/gameserver/model/zone/type/L2DungeonZone.java
+@@ -1,7 +1,8 @@
+ package net.sf.l2j.gameserver.model.zone.type;
+ 
++import java.util.List;
++
+ import net.sf.l2j.Config;
+-import net.sf.l2j.gameserver.model.World;
+ import net.sf.l2j.gameserver.model.actor.Creature;
+ import net.sf.l2j.gameserver.model.actor.instance.Player;
+ import net.sf.l2j.gameserver.model.zone.L2SpawnZone;
+@@ -38,31 +39,16 @@ public class L2DungeonZone extends L2SpawnZone
+ 			
+ 			if (Config.HWID_ZONES_CHECK)
+ 			{
+-				String hwid = player.getHWID();
+-				for (Player player1 : World.getInstance().getPlayers())
++				final List<Player> others = player.getHwidWindowsInRestrictedZones(true);
++				final int excess = others.size() - (Config.HWID_ZONES_MAX_WINDOWS - 1);
++				for (int i = 0; i < excess; i++)
+ 				{
+-					if (player1 == player)
+-						continue;
+-					
+-					if (player1.isGM() || player.isGM())
+-						continue;
+-					
+-					if (player.isInFunEvent() || player1.isInFunEvent())
+-						continue;
+-
+-					if (!(player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON) || player1.isInGludin()))
+-						continue;
+-
+-					String plr_hwid = player1.getHWID();
+-					if (plr_hwid.equalsIgnoreCase(hwid))
+-					{
+-						player1.setIsPendingRevive(true);
+-						player1.setInDungeonZone(false);
+-						player1.teleToLocation(83380, 148107, -3404, 0);
+-						player1.setInsideZone(ZoneId.FARM, false);
+-						player1.sendMessage("You have another window in a hwid restricted zone.");
+-						break;
+-					}
++					final Player player1 = others.get(i);
++					player1.setIsPendingRevive(true);
++					player1.setInDungeonZone(false);
++					player1.teleToLocation(83380, 148107, -3404, 0);
++					player1.setInsideZone(ZoneId.FARM, false);
++					player1.sendMessage("You have another window in a hwid restricted zone.");
+ 				}
+ 				if (character.isGM())
+ 					character.sendMessage("You have entered the Farm Area");
+diff --git a/java/net/sf/l2j/gameserver/model/zone/type/L2FarmZone.java b/java/net/sf/l2j/gameserver/model/zone/type/L2FarmZone.java
+index db26597..7b2ecd2 100644
+--- a/java/net/sf/l2j/gameserver/model/zone/type/L2FarmZone.java
++++ b/java/net/sf/l2j/gameserver/model/zone/type/L2FarmZone.java
+@@ -1,7 +1,8 @@
+ package net.sf.l2j.gameserver.model.zone.type;
+ 
++import java.util.List;
++
+ import net.sf.l2j.Config;
+-import net.sf.l2j.gameserver.model.World;
+ import net.sf.l2j.gameserver.model.actor.Creature;
+ import net.sf.l2j.gameserver.model.actor.instance.Player;
+ import net.sf.l2j.gameserver.model.zone.L2SpawnZone;
+@@ -26,31 +27,16 @@ public class L2FarmZone extends L2SpawnZone
+ 				player.setInFarmZone(true);
+ 				if (Config.HWID_ZONES_CHECK)
+ 				{
+-					String hwid = player.getHWID();
+-					for (Player player1 : World.getInstance().getPlayers())
++					final List<Player> others = player.getHwidWindowsInRestrictedZones(true);
++					final int excess = others.size() - (Config.HWID_ZONES_MAX_WINDOWS - 1);
++					for (int i = 0; i < excess; i++)
+ 					{
+-						if (player1 == player)
+-							continue;
+-						
+-						if (player1.isGM() || player.isGM())
+-							continue;
+-						
+-						if (player.isInFunEvent() || player1.isInFunEvent())
+-							continue;
+-
+-						if (!(player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON) || player1.isInGludin()))
+-							continue;
+-
+-						String plr_hwid = player1.getHWID();
+-						if (plr_hwid.equalsIgnoreCase(hwid))
+-						{
+-							player1.setIsPendingRevive(true);
+-							player1.setInFarmZone(false);
+-							player1.teleToLocation(83380, 148107, -3404, 0);
+-							player1.setInsideZone(ZoneId.FARM, false);
+-							player1.sendMessage("You have another window in a hwid restricted zone.");
+-							break;
+-						}
++						final Player player1 = others.get(i);
++						player1.setIsPendingRevive(true);
++						player1.setInFarmZone(false);
++						player1.teleToLocation(83380, 148107, -3404, 0);
++						player1.setInsideZone(ZoneId.FARM, false);
++						player1.sendMessage("You have another window in a hwid restricted zone.");
+ 					}
+ 					if (character.isGM())
+ 						character.sendMessage("You have entered the Farm Area");
+diff --git a/java/net/sf/l2j/gameserver/network/clientpackets/EnterWorld.java b/java/net/sf/l2j/gameserver/network/clientpackets/EnterWorld.java
+index b0b979e..e9eca22 100644
+--- a/java/net/sf/l2j/gameserver/network/clientpackets/EnterWorld.java
++++ b/java/net/sf/l2j/gameserver/network/clientpackets/EnterWorld.java
+@@ -6,6 +6,7 @@ import java.sql.ResultSet;
+ import java.text.SimpleDateFormat;
+ import java.util.Calendar;
+ import java.util.Date;
++import java.util.List;
+ import java.util.logging.Level;
+ 
+ import net.sf.l2j.commons.concurrent.ThreadPool;
+@@ -662,29 +663,17 @@ public class EnterWorld extends L2GameClientPacket
+ 							// Gludin não entra aqui: quem loga em Gludin já foi mandado pra cidade pelo bloco acima.
+ 							if (_player.isInsideZone(ZoneId.FARM) || _player.isInsideZone(ZoneId.DUNGEON))
+ 							{
+-								String hwid = _player.getHWID();
+-								for (Player player1 : World.getInstance().getPlayers())
++								final List<Player> others = _player.getHwidWindowsInRestrictedZones(false);
++								final int excess = others.size() - (Config.HWID_ZONES_MAX_WINDOWS - 1);
++								for (int i = 0; i < excess; i++)
+ 								{
+-									if (player1 == _player)
+-										continue;
+-									
+-									if (player1.isGM() || _player.isGM())
+-										continue;
+-									
+-									if (!(player1.isInGludin() || player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON)))
+-										continue;
+-									
+-									String plr_hwid = player1.getHWID();
+-									if (plr_hwid.equalsIgnoreCase(hwid))
+-									{
+-										player1.setIsPendingRevive(true);
+-										player1.setIsInGludin(false);
+-										PvpFlagTaskManager.getInstance().add(player1, Config.PVP_NORMAL_TIME);
+-										player1.getActingPlayer().broadcastUserInfo();
+-										player1.sendMessage("You have another window in a hwid restricted zone.");
+-										player1.teleToLocation(83380, 148107, -3404, 0);
+-										break;
+-									}
++									final Player player1 = others.get(i);
++									player1.setIsPendingRevive(true);
++									player1.setIsInGludin(false);
++									PvpFlagTaskManager.getInstance().add(player1, Config.PVP_NORMAL_TIME);
++									player1.getActingPlayer().broadcastUserInfo();
++									player1.sendMessage("You have another window in a hwid restricted zone.");
++									player1.teleToLocation(83380, 148107, -3404, 0);
+ 								}
+ 							}
+ 						}

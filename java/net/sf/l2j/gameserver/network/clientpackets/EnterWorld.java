@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 
 import net.sf.l2j.commons.concurrent.ThreadPool;
@@ -662,29 +663,17 @@ public class EnterWorld extends L2GameClientPacket
 							// Gludin não entra aqui: quem loga em Gludin já foi mandado pra cidade pelo bloco acima.
 							if (_player.isInsideZone(ZoneId.FARM) || _player.isInsideZone(ZoneId.DUNGEON))
 							{
-								String hwid = _player.getHWID();
-								for (Player player1 : World.getInstance().getPlayers())
+								final List<Player> others = _player.getHwidWindowsInRestrictedZones(false);
+								final int excess = others.size() - (Config.HWID_ZONES_MAX_WINDOWS - 1);
+								for (int i = 0; i < excess; i++)
 								{
-									if (player1 == _player)
-										continue;
-									
-									if (player1.isGM() || _player.isGM())
-										continue;
-									
-									if (!(player1.isInGludin() || player1.isInsideZone(ZoneId.FARM) || player1.isInsideZone(ZoneId.DUNGEON)))
-										continue;
-									
-									String plr_hwid = player1.getHWID();
-									if (plr_hwid.equalsIgnoreCase(hwid))
-									{
-										player1.setIsPendingRevive(true);
-										player1.setIsInGludin(false);
-										PvpFlagTaskManager.getInstance().add(player1, Config.PVP_NORMAL_TIME);
-										player1.getActingPlayer().broadcastUserInfo();
-										player1.sendMessage("You have another window in a hwid restricted zone.");
-										player1.teleToLocation(83380, 148107, -3404, 0);
-										break;
-									}
+									final Player player1 = others.get(i);
+									player1.setIsPendingRevive(true);
+									player1.setIsInGludin(false);
+									PvpFlagTaskManager.getInstance().add(player1, Config.PVP_NORMAL_TIME);
+									player1.getActingPlayer().broadcastUserInfo();
+									player1.sendMessage("You have another window in a hwid restricted zone.");
+									player1.teleToLocation(83380, 148107, -3404, 0);
 								}
 							}
 						}

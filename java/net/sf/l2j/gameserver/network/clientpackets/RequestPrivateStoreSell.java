@@ -68,7 +68,7 @@ public final class RequestPrivateStoreSell extends L2GameClientPacket
 		
 		if (!player.isGM() && !player.canTrade())
 		{
-			player.sendMessage("You need to wait 24 hours after making a character to use vendor");
+			player.sendMessage("You need to wait 12 hours after making a character to use vendor");
 			return;
 		}
 

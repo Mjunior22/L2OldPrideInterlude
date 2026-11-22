@@ -48,7 +48,7 @@ public final class TradeRequest extends L2GameClientPacket
 		
 		if (!player.isGM() && !player.canTrade())
 		{
-			player.sendMessage("You need to wait 24 hours after making a character to use trade");
+			player.sendMessage("You need to wait 12 hours after making a character to use trade");
 			return;
 		}
 
@@ -91,7 +91,7 @@ public final class TradeRequest extends L2GameClientPacket
 		
 		if (!player.isGM() && !target.canTrade())
 		{
-			player.sendMessage("Target's character is too new to do trade (24 hrs)");
+			player.sendMessage("Target's character is too new to do trade (12 hrs)");
 			return;
 		}
 

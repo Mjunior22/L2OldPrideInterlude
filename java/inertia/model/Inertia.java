@@ -261,28 +261,24 @@ public class Inertia implements Runnable
 			return; // pausa ações e NÃO consome crédito enquanto morto — _running continua true
 		}
 		
-		if (Config.HWID_AUTOFARM_CHECK)
+		if (Config.HWID_AUTOFARM_CHECK && !player.isGM())
 		{
-			try
+			// Safety net (limit lowered while running, or two sessions started at the same time) : the N sessions with the lowest objectId keep running.
+			final List<Inertia> others = getRunningSameHwid(player);
+			if (others.size() >= Config.HWID_AUTOFARM_MAX_WINDOWS)
 			{
-				final String hwid = player.getHWID();
-				for (final var autoChill : InertiaController.getInstance().getInertias().entrySet())
+				int ahead = 0;
+				for (final Inertia other : others)
+					if (other.getActivePlayer().getObjectId() < player.getObjectId())
+						ahead++;
+				
+				if (ahead >= Config.HWID_AUTOFARM_MAX_WINDOWS)
 				{
-					if (autoChill.getValue().isRunning() && player != autoChill.getKey().getPlayer())
-					{
-						final String otherHwid = autoChill.getKey().getPlayer().getHWID();
-						if (hwid.equalsIgnoreCase(otherHwid))
-						{
-							player.sendMessage("Your HWID is already using AutoFarm on a different session!");
-							autoChill.getValue().setRunning(false);
-							autoChill.getValue().render();
-						}
-					}
+					player.sendMessage("AutoFarm limit reached: max " + Config.HWID_AUTOFARM_MAX_WINDOWS + " window(s) per HWID.");
+					setRunning(false);
+					render();
+					return;
 				}
-			}
-			catch (Exception e)
-			{
-				_log.info("Error validating HWID uniqueness: " + e.getMessage());
 			}
 		}
 		
@@ -1246,8 +1242,45 @@ public class Inertia implements Runnable
 		return _running;
 	}
 	
+	/**
+	 * Other AutoFarm sessions currently running with the same HWID as the given player.<br>
+	 * Empty HWID means "unknown", never "same computer".
+	 * @param player : The player of this session.
+	 * @return the other running sessions that share the HWID.
+	 */
+	private List<Inertia> getRunningSameHwid(final Player player)
+	{
+		final List<Inertia> list = new ArrayList<>();
+		
+		final String hwid = player.getHWID();
+		if (hwid == null || hwid.isEmpty())
+			return list;
+		
+		for (final Inertia other : InertiaController.getInstance().getInertias().values())
+		{
+			if (other == this || !other._running)
+				continue;
+			
+			final Player otherPlayer = other.getActivePlayer();
+			if (otherPlayer != null && hwid.equalsIgnoreCase(otherPlayer.getHWID()))
+				list.add(other);
+		}
+		return list;
+	}
+	
 	public void setRunning(final boolean running)
 	{
+		if (running && Config.HWID_AUTOFARM_CHECK)
+		{
+			final Player hwidPlayer = getActivePlayer();
+			if (hwidPlayer != null && !hwidPlayer.isGM() && getRunningSameHwid(hwidPlayer).size() >= Config.HWID_AUTOFARM_MAX_WINDOWS)
+			{
+				_running = false;
+				hwidPlayer.sendMessage("AutoFarm limit reached: max " + Config.HWID_AUTOFARM_MAX_WINDOWS + " window(s) per HWID.");
+				return;
+			}
+		}
+		
 		_running = running;
 		
 		final Player player = getActivePlayer();

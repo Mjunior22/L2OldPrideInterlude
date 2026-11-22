@@ -796,6 +796,8 @@ public final class Config
 	public static boolean HWID_EVENTS_CHECK;
 	public static boolean HWID_AUTOFARM_CHECK;
 	public static boolean HWID_DUNGEONS_CHECK;
+	public static int HWID_ZONES_MAX_WINDOWS;
+	public static int HWID_AUTOFARM_MAX_WINDOWS;
 	
 	public static int MONSTER_SKILL_CHANCE;
 	public static int MONSTER_SKILL_SHORT_CHANCE;
@@ -2456,6 +2458,8 @@ public final class Config
 		HWID_EVENTS_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwidevents_check", "true"));
 		HWID_AUTOFARM_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwidautofarm_check", "true"));
 		HWID_DUNGEONS_CHECK = Boolean.parseBoolean(l2jmega.getProperty("hwiddungeon_check", "true"));
+		HWID_ZONES_MAX_WINDOWS = Math.max(1, Integer.parseInt(l2jmega.getProperty("hwidzone_max_windows", "1")));
+		HWID_AUTOFARM_MAX_WINDOWS = Math.max(1, Integer.parseInt(l2jmega.getProperty("hwidautofarm_max_windows", "1")));
 		
 		MONSTER_SKILL_CHANCE = Integer.parseInt(l2jmega.getProperty("monster_skill_chance", "50"));
 		MONSTER_SKILL_SHORT_CHANCE = Integer.parseInt(l2jmega.getProperty("monster_skill_short_chance", "50"));
