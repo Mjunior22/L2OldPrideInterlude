@@ -42,20 +42,22 @@ public final class Weapon extends Item
 	
 	private final int _shieldDef;
 	private final double _shieldDefRate;
-
+	
 	private IntIntHolder _enchant4Skill = null; // skill that activates when item is enchanted +4 (for duals)
-
+	
 	// Attached skills for Special Abilities
 	private IntIntHolder _skillsOnCast;
 	private Condition _skillsOnCastCondition = null;
+	private boolean _badOnCastWarned;
+	private boolean _badOnCritWarned;
 	private IntIntHolder _skillsOnCrit;
 	private Condition _skillsOnCritCondition = null;
-
+	
 	private final int _reuseDelay;
-
+	
 	private final int _reducedSoulshot;
 	private final int _reducedSoulshotChance;
-
+	
 	/**
 	 * Constructor for Weapon.<BR>
 	 * <BR>
@@ -92,18 +94,18 @@ public final class Weapon extends Item
 		
 		_shieldDef = set.getInteger("shield_def", 0);
 		_shieldDefRate = set.getDouble("shield_def_rate", 0);
-
+		
 		_atkReuse = set.getInteger("atk_reuse", (_type == WeaponType.BOW) ? 1500 : 0);
-
+		
 		String[] reduced_soulshots = set.getString("reduced_soulshot", "").split(",");
 		_reducedSoulshotChance = (reduced_soulshots.length == 2) ? Integer.parseInt(reduced_soulshots[0]) : 0;
 		_reducedSoulshot = (reduced_soulshots.length == 2) ? Integer.parseInt(reduced_soulshots[1]) : 0;
-
+		
 		String skill = set.getString("enchant4_skill", null);
 		if (skill != null)
 		{
 			String[] info = skill.split("-");
-
+			
 			if (info != null && info.length == 2)
 			{
 				int id = 0;
@@ -122,7 +124,7 @@ public final class Weapon extends Item
 					_enchant4Skill = new IntIntHolder(id, level);
 			}
 		}
-
+		
 		skill = set.getString("oncast_skill", null);
 		if (skill != null)
 		{
@@ -153,7 +155,7 @@ public final class Weapon extends Item
 				}
 			}
 		}
-
+		
 		skill = set.getString("oncrit_skill", null);
 		if (skill != null)
 		{
@@ -185,7 +187,7 @@ public final class Weapon extends Item
 			}
 		}
 	}
-
+	
 	/**
 	 * @return the type of weapon.
 	 */
@@ -194,7 +196,7 @@ public final class Weapon extends Item
 	{
 		return _type;
 	}
-
+	
 	/**
 	 * @return the ID of the Etc item after applying the mask.
 	 */
@@ -203,7 +205,7 @@ public final class Weapon extends Item
 	{
 		return getItemType().mask();
 	}
-
+	
 	/**
 	 * @return the quantity of SoulShot used.
 	 */
@@ -211,7 +213,7 @@ public final class Weapon extends Item
 	{
 		return _soulShotCount;
 	}
-
+	
 	/**
 	 * @return the quatity of SpiritShot used.
 	 */
@@ -219,7 +221,7 @@ public final class Weapon extends Item
 	{
 		return _spiritShotCount;
 	}
-
+	
 	/**
 	 * @return the reduced quantity of SoultShot used.
 	 */
@@ -227,7 +229,7 @@ public final class Weapon extends Item
 	{
 		return _reducedSoulshot;
 	}
-
+	
 	/**
 	 * @return the chance to use Reduced SoultShot.
 	 */
@@ -235,7 +237,7 @@ public final class Weapon extends Item
 	{
 		return _reducedSoulshotChance;
 	}
-
+	
 	/**
 	 * @return the random damage inflicted by the weapon
 	 */
@@ -243,7 +245,7 @@ public final class Weapon extends Item
 	{
 		return _rndDam;
 	}
-
+	
 	/**
 	 * @return the Reuse Delay of the Weapon.
 	 */
@@ -251,7 +253,7 @@ public final class Weapon extends Item
 	{
 		return _reuseDelay;
 	}
-
+	
 	/**
 	 * @return true or false if weapon is considered as a mage weapon.
 	 */
@@ -259,7 +261,7 @@ public final class Weapon extends Item
 	{
 		return _isMagical;
 	}
-
+	
 	/**
 	 * @return the MP consumption of the weapon.
 	 */
@@ -267,10 +269,10 @@ public final class Weapon extends Item
 	{
 		if (_mpConsumeReduceRate > 0 && Rnd.get(100) < _mpConsumeReduceRate)
 			return _mpConsumeReduceValue;
-
+		
 		return _mpConsume;
 	}
-
+	
 	/**
 	 * @return The skill player obtains when he equiped weapon +4 or more (for duals SA)
 	 */
@@ -278,10 +280,10 @@ public final class Weapon extends Item
 	{
 		if (_enchant4Skill == null)
 			return null;
-
+		
 		return _enchant4Skill.getSkill();
 	}
-
+	
 	/**
 	 * @param caster : Creature pointing out the caster
 	 * @param target : Creature pointing out the target
@@ -292,37 +294,49 @@ public final class Weapon extends Item
 	{
 		if (_skillsOnCrit == null || !crit)
 			return Collections.emptyList();
-
+		
+		// The skill declared in oncrit_skill may not exist in the skills data : never dereference a null skill.
+		final L2Skill critSkill = _skillsOnCrit.getSkill();
+		if (critSkill == null)
+		{
+			if (!_badOnCritWarned)
+			{
+				_badOnCritWarned = true;
+				_log.warning("Weapon " + this + " has an oncrit_skill that doesn't exist : " + _skillsOnCrit.getId() + "-" + _skillsOnCrit.getValue());
+			}
+			return Collections.emptyList();
+		}
+		
 		final List<L2Effect> effects = new ArrayList<>();
-
+		
 		if (_skillsOnCritCondition != null)
 		{
 			final Env env = new Env();
 			env.setCharacter(caster);
 			env.setTarget(target);
-			env.setSkill(_skillsOnCrit.getSkill());
-
+			env.setSkill(critSkill);
+			
 			if (!_skillsOnCritCondition.test(env))
 				return Collections.emptyList();
 		}
-
-		final byte shld = Formulas.calcShldUse(caster, target, _skillsOnCrit.getSkill());
-		if (!Formulas.calcSkillSuccess(caster, target, _skillsOnCrit.getSkill(), shld))
+		
+		final byte shld = Formulas.calcShldUse(caster, target, critSkill);
+		if (!Formulas.calcSkillSuccess(caster, target, critSkill, shld))
 			return Collections.emptyList();
-
-		if (target.getFirstEffect(_skillsOnCrit.getSkill().getId()) != null)
-			target.getFirstEffect(_skillsOnCrit.getSkill().getId()).exit();
-
-		for (L2Effect e : _skillsOnCrit.getSkill().getEffects(caster, target, new Env(shld, false, false, false)))
+		
+		if (target.getFirstEffect(critSkill.getId()) != null)
+			target.getFirstEffect(critSkill.getId()).exit();
+		
+		for (L2Effect e : critSkill.getEffects(caster, target, new Env(shld, false, false, false)))
 		{
 			effects.add(e);
 			if (caster instanceof Player)
 				caster.sendMessage(target.getName() + " is affected by weapon special ability");
 		}
-
+		
 		return effects;
 	}
-
+	
 	/**
 	 * @param caster : Creature pointing out the caster
 	 * @param target : Creature pointing out the target
@@ -334,12 +348,24 @@ public final class Weapon extends Item
 		if (_skillsOnCast == null)
 			return Collections.emptyList();
 		
+		// The skill declared in oncast_skill may not exist in the skills data : never dereference a null skill.
+		final L2Skill castSkill = _skillsOnCast.getSkill();
+		if (castSkill == null)
+		{
+			if (!_badOnCastWarned)
+			{
+				_badOnCastWarned = true;
+				_log.warning("Weapon " + this + " has an oncast_skill that doesn't exist : " + _skillsOnCast.getId() + "-" + _skillsOnCast.getValue());
+			}
+			return Collections.emptyList();
+		}
+		
 		// Trigger only same type of skill.
-		if (trigger.isOffensive() != _skillsOnCast.getSkill().isOffensive())
+		if (trigger.isOffensive() != castSkill.isOffensive())
 			return Collections.emptyList();
 		
 		// No buffing with toggle or not magic skills.
-		if ((trigger.isToggle() || !trigger.isMagic()) && _skillsOnCast.getSkill().getSkillType() == L2SkillType.BUFF)
+		if ((trigger.isToggle() || !trigger.isMagic()) && castSkill.getSkillType() == L2SkillType.BUFF)
 			return Collections.emptyList();
 		
 		if (_skillsOnCastCondition != null)
@@ -347,27 +373,27 @@ public final class Weapon extends Item
 			final Env env = new Env();
 			env.setCharacter(caster);
 			env.setTarget(target);
-			env.setSkill(_skillsOnCast.getSkill());
+			env.setSkill(castSkill);
 			
 			if (!_skillsOnCastCondition.test(env))
 				return Collections.emptyList();
 		}
 		
-		final byte shld = Formulas.calcShldUse(caster, target, _skillsOnCast.getSkill());
-		if (_skillsOnCast.getSkill().isOffensive() && !Formulas.calcSkillSuccess(caster, target, _skillsOnCast.getSkill(), shld))
+		final byte shld = Formulas.calcShldUse(caster, target, castSkill);
+		if (castSkill.isOffensive() && !Formulas.calcSkillSuccess(caster, target, castSkill, shld))
 			return Collections.emptyList();
 		
 		// Get the skill handler corresponding to the skill type
-		ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(_skillsOnCast.getSkill().getSkillType());
+		ISkillHandler handler = SkillHandler.getInstance().getSkillHandler(castSkill.getSkillType());
 		
 		Creature[] targets = new Creature[1];
 		targets[0] = target;
 		
 		// Launch the magic skill and calculate its effects
 		if (handler != null)
-			handler.useSkill(caster, _skillsOnCast.getSkill(), targets);
+			handler.useSkill(caster, castSkill, targets);
 		else
-			_skillsOnCast.getSkill().useSkill(caster, targets);
+			castSkill.useSkill(caster, targets);
 		
 		// notify quests of a skill use
 		if (caster instanceof Player)
@@ -378,7 +404,7 @@ public final class Weapon extends Item
 				List<Quest> quests = npcMob.getTemplate().getEventQuests(EventType.ON_SKILL_SEE);
 				if (quests != null)
 					for (Quest quest : quests)
-						quest.notifySkillSee(npcMob, (Player) caster, _skillsOnCast.getSkill(), targets, false);
+						quest.notifySkillSee(npcMob, (Player) caster, castSkill, targets, false);
 			}
 		}
 		return Collections.emptyList();
@@ -402,7 +428,7 @@ public final class Weapon extends Item
 	{
 		return _shieldDef;
 	}
-
+	
 	/**
 	 * Returns the rate of shield defense of the weapon
 	 * @return double

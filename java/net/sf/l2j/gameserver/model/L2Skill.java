@@ -1126,7 +1126,7 @@ public abstract class L2Skill implements IChanceSkillTrigger
 	{
 		if (activeChar != null && activeChar instanceof Player)
 		{
-			if (getFlyType() != null) // is rush skill 
+			if (getFlyType() != null) // is rush skill
 				return (int) (activeChar.calcStat(Stats.RUSH_DIST_ADD, _skillRadius, null, this));
 			
 			return (int) (activeChar.calcStat(Stats.SKILL_RADIUS_BOOST, _skillRadius, null, this));
@@ -1672,11 +1672,18 @@ public abstract class L2Skill implements IChanceSkillTrigger
 			{
 				final Summon pet = activeChar.getPet();
 				if (pet != null && !pet.isDead() && pet.isInsideRadius(activeChar, 1000, true, false))
-					return new Creature[] { pet, activeChar };
+					return new Creature[]
+					{
+						pet,
+						activeChar
+					};
 				
-				return new Creature[]{ activeChar };
+				return new Creature[]
+				{
+					activeChar
+				};
 			}
-				
+			
 			case TARGET_HOLY:
 			{
 				if (!(target instanceof HolyThing))
@@ -1742,85 +1749,85 @@ public abstract class L2Skill implements IChanceSkillTrigger
 			}
 			case TARGET_AURA:
 			{
-			    final int radius = getSkillRadius(activeChar);
-			    final Player src = activeChar.getActingPlayer();
-			    
-			    int size = activeChar.isGM() ? 300 : 20;
-			    
-			    if (src != null && src._inEventDM && DM._started)
-			        size = 3;
-			    
-			    // ⭐⭐ VERIFICA SE É DEBUFF OU BUFF ⭐⭐
-			    boolean isDebuff = isDebuff() || isOffensive();
-			    
-			    if (!isDebuff)
-			    {
-			        // BUFF: Adiciona o caster
-			        targetList.add(activeChar);
-			    }
-			    
-			    // Go through the Creature _knownList
-			    for (Creature obj : activeChar.getKnownTypeInRadius(Creature.class, radius))
-			    {
-			        if (targetList.size() < size)
-			        {
-			            if (obj == null || obj.isAlikeDead())
-			                continue;
-			            
-			            // ⭐⭐ DEBUFF: pula o caster ⭐⭐
-			            if (isDebuff && obj == activeChar)
-			                continue;
-			            
-			            if (!(obj instanceof Attackable || obj instanceof Playable))
-			                continue;
-			            
-			            if (obj instanceof Guard)
-			                continue;
-			            
-			            if (!GeoEngine.getInstance().canSeeTarget(activeChar, obj))
-			                continue;
-			            
-			            if (src != null) // caster is l2playable and exists
-			            {
-			                if (obj instanceof Playable)
-			                {
-			                    final Player player = obj.getActingPlayer();
-			                    
-			                    if (src == player)
-			                        continue;
-			                    
-			                    if (getAreaInclude() == 0)
-			                    {
-			                        if (!src.checkAOEPvPSkill(player, this))
-			                            continue;
-			                    }
-			                    else
-			                    {
-			                        if (!player.isAutoAttackableTargetAll(src, true))
-			                            continue;
-			                    }
-			                }
-			                else if (src.isInDuel() || !src.canAttackDueToSoloMob(obj))
-			                    continue;
-			            }
-			            else
-			            // Skill user is not L2PlayableInstance
-			            {
-			                if (!(obj instanceof Playable))
-			                    continue;
-			                
-			                if (!canBeIncludedAsAOETarget(activeChar, (Creature) activeChar.getTarget(), obj))
-			                    continue;
-			            }
-			            
-			            targetList.add(obj);
-			            
-			            if (onlyFirst)
-			                break;
-			        }
-			    }
-			    
-			    return targetList.toArray(new Creature[targetList.size()]);
+				final int radius = getSkillRadius(activeChar);
+				final Player src = activeChar.getActingPlayer();
+				
+				int size = activeChar.isGM() ? 300 : 20;
+				
+				if (src != null && src._inEventDM && DM._started)
+					size = 3;
+				
+				// ⭐⭐ VERIFICA SE É DEBUFF OU BUFF ⭐⭐
+				boolean isDebuff = isDebuff() || isOffensive();
+				
+				if (!isDebuff)
+				{
+					// BUFF: Adiciona o caster
+					targetList.add(activeChar);
+				}
+				
+				// Go through the Creature _knownList
+				for (Creature obj : activeChar.getKnownTypeInRadius(Creature.class, radius))
+				{
+					if (targetList.size() < size)
+					{
+						if (obj == null || obj.isAlikeDead())
+							continue;
+						
+						// ⭐⭐ DEBUFF: pula o caster ⭐⭐
+						if (isDebuff && obj == activeChar)
+							continue;
+						
+						if (!(obj instanceof Attackable || obj instanceof Playable))
+							continue;
+						
+						if (obj instanceof Guard)
+							continue;
+						
+						if (!GeoEngine.getInstance().canSeeTarget(activeChar, obj))
+							continue;
+						
+						if (src != null) // caster is l2playable and exists
+						{
+							if (obj instanceof Playable)
+							{
+								final Player player = obj.getActingPlayer();
+								
+								if (src == player)
+									continue;
+								
+								if (getAreaInclude() == 0)
+								{
+									if (!src.checkAOEPvPSkill(player, this))
+										continue;
+								}
+								else
+								{
+									if (!player.isAutoAttackableTargetAll(src, true))
+										continue;
+								}
+							}
+							else if (src.isInDuel() || !src.canAttackDueToSoloMob(obj))
+								continue;
+						}
+						else
+						// Skill user is not L2PlayableInstance
+						{
+							if (!(obj instanceof Playable))
+								continue;
+							
+							if (!canBeIncludedAsAOETarget(activeChar, (Creature) activeChar.getTarget(), obj))
+								continue;
+						}
+						
+						targetList.add(obj);
+						
+						if (onlyFirst)
+							break;
+					}
+				}
+				
+				return targetList.toArray(new Creature[targetList.size()]);
 			}
 			
 			case TARGET_ALL:
@@ -2431,88 +2438,91 @@ public abstract class L2Skill implements IChanceSkillTrigger
 			}
 			case TARGET_PARTY:
 			{
-			    if (onlyFirst)
-			        return new Creature[] { activeChar };
-			    
-			    targetList.add(activeChar);
-			    
-			    // ⭐⭐ CORREÇÃO: Inicialize 'player' corretamente ⭐⭐
-			    Player player = null;
-			    
-			    // Se activeChar é Player, obtém a referência
-			    if (activeChar instanceof Player)
-			        player = (Player) activeChar;
-			    else if (activeChar instanceof Summon)
-			        player = ((Summon) activeChar).getOwner();
-			    
-			    final int radius = getSkillRadius(activeChar);
-			    
-			    // ⭐⭐ CORREÇÃO: Verifique se 'player' não é null antes de usar ⭐⭐
-			    if (player != null)
-			    {
-			        // Se activeChar é um Summon, adiciona seu dono
-			        if (activeChar instanceof Summon)
-			        {
-			            if (addCharacter(activeChar, player, radius, false))
-			                targetList.add(player);
-			        }
-			        // Se activeChar é um Player, adiciona seu summon (pet)
-			        else if (activeChar instanceof Player)
-			        {
-			            final Summon summon = player.getPet();
-			            if (summon != null && addSummon(activeChar, player, radius, false))  // ⭐⭐ CORRIGIDO ⭐⭐
-			                targetList.add(summon);
-			        }
-			        
-			        if (player.isInDuel() || (Config.BLOCK_GLUDIN_INTERACTION && player.isInGludin()))
-			            return targetList.toArray(new Creature[targetList.size()]);
-			    }
-			    
-			    final Party party = activeChar.getParty();
-			    if (party != null)
-			    {
-			        final Player actingPlayer = activeChar.getActingPlayer();
-			        final boolean isInPeace = actingPlayer != null && actingPlayer.isInsideZone(ZoneId.PEACE);
-			        
-			        // Get a list of Party Members
-			        for (Player partyMember : party.getMembers())
-			        {
-			            // ⭐⭐ CORREÇÃO: Verifique se partyMember não é null ⭐⭐
-			            if (partyMember == null || partyMember == activeChar || partyMember.isDead())
-			                continue;
-			            
-			            if (partyMember.isInDuel())
-			                continue;
-			            
-			            if (isInPeace && !partyMember.isInsideZone(ZoneId.PEACE))
-			                continue;
-			            
-			            if (partyMember.isInFunEvent())
-			            {
-			                if (activeChar.isInFunEvent())
-			                {
-			                    if (partyMember.CanAttackDueToInEvent(activeChar))
-			                        continue;
-			                }
-			                else
-			                    continue;
-			            }
-			            else if (activeChar.isInFunEvent())
-			                continue;
-			            
-			            if (addCharacter(activeChar, partyMember, radius, false))
-			                targetList.add(partyMember);
-			            
-			            // ⭐⭐ CORREÇÃO: Verifique se partyMember não é null ⭐⭐
-			            if (partyMember != null && addSummon(activeChar, partyMember, radius, false))
-			            {
-			                final Summon summon = partyMember.getPet();
-			                if (summon != null)
-			                    targetList.add(summon);
-			            }
-			        }
-			    }
-			    return targetList.toArray(new Creature[targetList.size()]);
+				if (onlyFirst)
+					return new Creature[]
+					{
+						activeChar
+					};
+				
+				targetList.add(activeChar);
+				
+				// ⭐⭐ CORREÇÃO: Inicialize 'player' corretamente ⭐⭐
+				Player player = null;
+				
+				// Se activeChar é Player, obtém a referência
+				if (activeChar instanceof Player)
+					player = (Player) activeChar;
+				else if (activeChar instanceof Summon)
+					player = ((Summon) activeChar).getOwner();
+				
+				final int radius = getSkillRadius(activeChar);
+				
+				// ⭐⭐ CORREÇÃO: Verifique se 'player' não é null antes de usar ⭐⭐
+				if (player != null)
+				{
+					// Se activeChar é um Summon, adiciona seu dono
+					if (activeChar instanceof Summon)
+					{
+						if (addCharacter(activeChar, player, radius, false))
+							targetList.add(player);
+					}
+					// Se activeChar é um Player, adiciona seu summon (pet)
+					else if (activeChar instanceof Player)
+					{
+						final Summon summon = player.getPet();
+						if (summon != null && addSummon(activeChar, player, radius, false)) // ⭐⭐ CORRIGIDO ⭐⭐
+							targetList.add(summon);
+					}
+					
+					if (player.isInDuel() || (Config.BLOCK_GLUDIN_INTERACTION && player.isInGludin()))
+						return targetList.toArray(new Creature[targetList.size()]);
+				}
+				
+				final Party party = activeChar.getParty();
+				if (party != null)
+				{
+					final Player actingPlayer = activeChar.getActingPlayer();
+					final boolean isInPeace = actingPlayer != null && actingPlayer.isInsideZone(ZoneId.PEACE);
+					
+					// Get a list of Party Members
+					for (Player partyMember : party.getMembers())
+					{
+						// ⭐⭐ CORREÇÃO: Verifique se partyMember não é null ⭐⭐
+						if (partyMember == null || partyMember == activeChar || partyMember.isDead())
+							continue;
+						
+						if (partyMember.isInDuel())
+							continue;
+						
+						if (isInPeace && !partyMember.isInsideZone(ZoneId.PEACE))
+							continue;
+						
+						if (partyMember.isInFunEvent())
+						{
+							if (activeChar.isInFunEvent())
+							{
+								if (partyMember.CanAttackDueToInEvent(activeChar))
+									continue;
+							}
+							else
+								continue;
+						}
+						else if (activeChar.isInFunEvent())
+							continue;
+						
+						if (addCharacter(activeChar, partyMember, radius, false))
+							targetList.add(partyMember);
+						
+						// ⭐⭐ CORREÇÃO: Verifique se partyMember não é null ⭐⭐
+						if (partyMember != null && addSummon(activeChar, partyMember, radius, false))
+						{
+							final Summon summon = partyMember.getPet();
+							if (summon != null)
+								targetList.add(summon);
+						}
+					}
+				}
+				return targetList.toArray(new Creature[targetList.size()]);
 			}
 			case TARGET_PARTY_MEMBER:
 			{
@@ -2675,11 +2685,16 @@ public abstract class L2Skill implements IChanceSkillTrigger
 						activeChar
 					};
 				
-				targetList.add(player);
+				// TARGET_CORPSE_ALLY (ex: Mass Resurrection) must pick DEAD allies/pets, TARGET_ALLY picks the living ones.
+				final boolean isCorpseType = targetType == SkillTargetType.TARGET_CORPSE_ALLY;
+				
+				// The caster is alive, so it only belongs to the list of a non-corpse skill.
+				if (!isCorpseType)
+					targetList.add(player);
 				
 				final int radius = _skillRadius;
 				
-				if (addSummon(activeChar, player, radius, false))
+				if (addSummon(activeChar, player, radius, isCorpseType))
 					targetList.add(player.getPet());
 				
 				if (player.getClan() != null)
@@ -2756,10 +2771,10 @@ public abstract class L2Skill implements IChanceSkillTrigger
 							continue;
 						
 						final Summon summon = obj.getPet();
-						if (summon != null && !summon.isDead())
+						if (summon != null && summon.isDead() == isCorpseType)
 							targetList.add(summon);
 						
-						if (!obj.isDead())
+						if (obj.isDead() == isCorpseType)
 							targetList.add(obj);
 					}
 				}
@@ -2860,20 +2875,20 @@ public abstract class L2Skill implements IChanceSkillTrigger
 							if (targetPlayer != null)
 							{
 								// Se o target tem autofarm com auto-resurrect ativo
-							    if (target instanceof Player)
-							    {
-							        Player resurrectedPlayer = (Player) target;
-							        Inertia inertia = InertiaController.getInstance().getAutoChill(resurrectedPlayer);
-							        if (inertia != null && inertia.isAutoResurrect())
-							        {
-							            // Notifica o player que ressuscitou
-							            resurrectedPlayer.sendMessage("Auto-Resurrection: You have been resurrected.");
-							            
-							            // Notifica o healer (opcional)
-							            if (activeChar instanceof Player)
-							                ((Player) activeChar).sendMessage(resurrectedPlayer.getName() + " has been auto-resurrected.");
-							        }
-							    }
+								if (target instanceof Player)
+								{
+									Player resurrectedPlayer = (Player) target;
+									Inertia inertia = InertiaController.getInstance().getAutoChill(resurrectedPlayer);
+									if (inertia != null && inertia.isAutoResurrect())
+									{
+										// Notifica o player que ressuscitou
+										resurrectedPlayer.sendMessage("Auto-Resurrection: You have been resurrected.");
+										
+										// Notifica o healer (opcional)
+										if (activeChar instanceof Player)
+											((Player) activeChar).sendMessage(resurrectedPlayer.getName() + " has been auto-resurrected.");
+									}
+								}
 								
 								// check target is not in a active siege zone
 								if (targetPlayer.isInsideZone(ZoneId.SIEGE) && !targetPlayer.isInSiege())
@@ -2958,72 +2973,72 @@ public abstract class L2Skill implements IChanceSkillTrigger
 			}
 			case TARGET_CORPSE_MOB:
 			{
-			    // ⭐⭐ VERIFICA SE target É NULL PRIMEIRO ⭐⭐
-			    if (target == null)
-			    {
-			        activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
-			        return _emptyTargetList;
-			    }
-			    
-			    Creature creatureTarget = target;
-			    
-			    if (!(creatureTarget instanceof Attackable) || !creatureTarget.isDead())
-			    {
-			        activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
-			        return _emptyTargetList;
-			    }
-			    
-			    // Corpse mob only available for half time
-			    if (_skillType == L2SkillType.DRAIN && !DecayTaskManager.getInstance().isCorpseActionAllowed((Attackable) creatureTarget))
-			    {
-			        activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.CORPSE_TOO_OLD_SKILL_NOT_USED));
-			        return _emptyTargetList;
-			    }
-			    
-			    return new Creature[]
-			    {
-			        creatureTarget
-			    };
+				// ⭐⭐ VERIFICA SE target É NULL PRIMEIRO ⭐⭐
+				if (target == null)
+				{
+					activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
+					return _emptyTargetList;
+				}
+				
+				Creature creatureTarget = target;
+				
+				if (!(creatureTarget instanceof Attackable) || !creatureTarget.isDead())
+				{
+					activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
+					return _emptyTargetList;
+				}
+				
+				// Corpse mob only available for half time
+				if (_skillType == L2SkillType.DRAIN && !DecayTaskManager.getInstance().isCorpseActionAllowed((Attackable) creatureTarget))
+				{
+					activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.CORPSE_TOO_OLD_SKILL_NOT_USED));
+					return _emptyTargetList;
+				}
+				
+				return new Creature[]
+				{
+					creatureTarget
+				};
 			}
 			case TARGET_AREA_CORPSE_MOB:
 			{
-			    // ⭐⭐ VERIFICA SE target É NULL PRIMEIRO ⭐⭐
-			    if (target == null)
-			    {
-			        activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
-			        return _emptyTargetList;
-			    }
-			    
-			    Creature creatureTarget = target;
-			    
-			    if ((!(creatureTarget instanceof Attackable)) || !creatureTarget.isDead())
-			    {
-			        activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
-			        return _emptyTargetList;
-			    }
-			    
-			    if (onlyFirst)
-			        return new Creature[]
-			        {
-			            creatureTarget
-			        };
-			    
-			    targetList.add(creatureTarget);
-			    
-			    activeChar.isInArena();
-			    
-			    for (Creature obj : activeChar.getKnownTypeInRadius(Creature.class, _skillRadius))
-			    {
-			        if (!(obj instanceof Attackable || obj instanceof Playable))
-			            continue;
-			        
-			        targetList.add(obj);
-			    }
-			    
-			    if (targetList.isEmpty())
-			        return _emptyTargetList;
-			    
-			    return targetList.toArray(new Creature[targetList.size()]);
+				// ⭐⭐ VERIFICA SE target É NULL PRIMEIRO ⭐⭐
+				if (target == null)
+				{
+					activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
+					return _emptyTargetList;
+				}
+				
+				Creature creatureTarget = target;
+				
+				if ((!(creatureTarget instanceof Attackable)) || !creatureTarget.isDead())
+				{
+					activeChar.sendPacket(SystemMessage.getSystemMessage(SystemMessageId.TARGET_IS_INCORRECT));
+					return _emptyTargetList;
+				}
+				
+				if (onlyFirst)
+					return new Creature[]
+					{
+						creatureTarget
+					};
+				
+				targetList.add(creatureTarget);
+				
+				activeChar.isInArena();
+				
+				for (Creature obj : activeChar.getKnownTypeInRadius(Creature.class, _skillRadius))
+				{
+					if (!(obj instanceof Attackable || obj instanceof Playable))
+						continue;
+					
+					targetList.add(obj);
+				}
+				
+				if (targetList.isEmpty())
+					return _emptyTargetList;
+				
+				return targetList.toArray(new Creature[targetList.size()]);
 			}
 			case TARGET_UNLOCKABLE:
 			{
@@ -3109,16 +3124,16 @@ public abstract class L2Skill implements IChanceSkillTrigger
 	
 	public final Creature[] getTargetList(Creature activeChar)
 	{
-	    return getTargetList(activeChar, false);
+		return getTargetList(activeChar, false);
 	}
 	
 	public final Creature getFirstOfTargetList(Creature activeChar)
 	{
-	    Creature[] targets = getTargetList(activeChar, true);
-	    
-	    if (targets == null || targets.length == 0)
-	        return null;
-	    return targets[0];
+		Creature[] targets = getTargetList(activeChar, true);
+		
+		if (targets == null || targets.length == 0)
+			return null;
+		return targets[0];
 	}
 	
 	public static final boolean addSummon(Creature caster, Player owner, int radius, boolean isDead)
@@ -3877,7 +3892,7 @@ public abstract class L2Skill implements IChanceSkillTrigger
 	{
 		return _afterEffectLvl;
 	}
-
+	
 	/**
 	 * @return Returns the boolean _isDebuff.
 	 */

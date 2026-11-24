@@ -459,9 +459,8 @@ public abstract class Creature extends WorldObject
 	 * @param x
 	 * @param y
 	 * @param z
-	 * @param randomOffset
-	 * <BR>
-	 * A {@link Player} always goes back to the normal world (instance 0), so any regular teleport (scroll, GM, death...) naturally kicks him out of an instance. Other creatures stay in their current instance.
+	 * @param randomOffset <BR>
+	 *            A {@link Player} always goes back to the normal world (instance 0), so any regular teleport (scroll, GM, death...) naturally kicks him out of an instance. Other creatures stay in their current instance.
 	 */
 	public void teleToLocation(int x, int y, int z, int randomOffset)
 	{
@@ -2030,74 +2029,74 @@ public abstract class Creature extends WorldObject
 		}
 		
 		// Transmite efeito de voo se necessario.
-//		if (skill.getFlyType() != null)
-//		{
-//			broadcastPacket(new FlyToLocation(this, target, FlyType.valueOf(skill.getFlyType())));
-//			setXYZ(target.getX(), target.getY(), target.getZ());
-//			broadcastPacket(new ValidateLocation(this));
-//		}
+		// if (skill.getFlyType() != null)
+		// {
+		// broadcastPacket(new FlyToLocation(this, target, FlyType.valueOf(skill.getFlyType())));
+		// setXYZ(target.getX(), target.getY(), target.getZ());
+		// broadcastPacket(new ValidateLocation(this));
+		// }
 		
-//		if (isRushSkill)
-//		{
-//			int id, x, y, z, tx, ty, tz;
-//			id = getObjectId();
-//			x = getX();
-//			y = getY();
-//			z = getZ();
-//			tx = target.getX();
-//			ty = target.getY();
-//			tz = target.getZ();
-//			if (target.isMoving())
-//			{
-//				final int targetHeading = target.getHeading();
-//				final int headingDegree = (int) Util.convertHeadingToDegree(targetHeading);
-//				final int dx = (int) (Math.cos(Math.toRadians(headingDegree)) * 55);
-//				final int dy = (int) (Math.sin(Math.toRadians(headingDegree)) * 55);
-//				tx += dx;
-//				ty += dy;
-//			}
-//			
-//			// Stop short of the target's collision box instead of landing on top of it,
-//			// otherwise GeoEngine treats the destination as blocked and can resolve to a
-//			// point well off to the side.
-//			final double distX = tx - x;
-//			final double distY = ty - y;
-//			final double distances = Math.sqrt(distX * distX + distY * distY);
-//			final double stopOffset = getCollisionRadius() + target.getCollisionRadius();
-//			
-//			if (distances > stopOffset)
-//			{
-//				tx = (int) (x + (distX * (distances - stopOffset) / distances));
-//				ty = (int) (y + (distY * (distances - stopOffset) / distances));
-//			}
-//			else
-//			{
-//				tx = x;
-//				ty = y;
-//			}
-//			
-//			if (Config.COORD_SYNCHRONIZE > 0)
-//			{
-//				Location destiny = GeoEngine.getInstance().canMoveToTargetLoc(x, y, z, tx, ty, tz);
-//				tx = destiny.getX();
-//				tx = destiny.getX();
-//				ty = destiny.getY();
-//				tz = destiny.getZ();
-//			}
-//			
-//			final FlyToLocation flyToLocation = new FlyToLocation(id, x, y, z, tx, ty, tz, FlyType.valueOf(skill.getFlyType()));
-//			broadcastPacket(flyToLocation);
-//			
-//			getPosition().set(tx, ty, tz);
-//			
-//			final int hamstring = (int) calcStat(Stats.HAMSTRING, 0, null, skill);
-//			
-//			if (hamstring > 0 && skill.getFlyType() != "DUMMY")
-//			{
-//				final int distance = (int) Util.calculateDistance(x, y, z, tx, ty);
-//				reduceCurrentHp(hamstring * distance, this, true, true, null, true);
-//			}
-//		}
+		// if (isRushSkill)
+		// {
+		// int id, x, y, z, tx, ty, tz;
+		// id = getObjectId();
+		// x = getX();
+		// y = getY();
+		// z = getZ();
+		// tx = target.getX();
+		// ty = target.getY();
+		// tz = target.getZ();
+		// if (target.isMoving())
+		// {
+		// final int targetHeading = target.getHeading();
+		// final int headingDegree = (int) Util.convertHeadingToDegree(targetHeading);
+		// final int dx = (int) (Math.cos(Math.toRadians(headingDegree)) * 55);
+		// final int dy = (int) (Math.sin(Math.toRadians(headingDegree)) * 55);
+		// tx += dx;
+		// ty += dy;
+		// }
+		//
+		// // Stop short of the target's collision box instead of landing on top of it,
+		// // otherwise GeoEngine treats the destination as blocked and can resolve to a
+		// // point well off to the side.
+		// final double distX = tx - x;
+		// final double distY = ty - y;
+		// final double distances = Math.sqrt(distX * distX + distY * distY);
+		// final double stopOffset = getCollisionRadius() + target.getCollisionRadius();
+		//
+		// if (distances > stopOffset)
+		// {
+		// tx = (int) (x + (distX * (distances - stopOffset) / distances));
+		// ty = (int) (y + (distY * (distances - stopOffset) / distances));
+		// }
+		// else
+		// {
+		// tx = x;
+		// ty = y;
+		// }
+		//
+		// if (Config.COORD_SYNCHRONIZE > 0)
+		// {
+		// Location destiny = GeoEngine.getInstance().canMoveToTargetLoc(x, y, z, tx, ty, tz);
+		// tx = destiny.getX();
+		// tx = destiny.getX();
+		// ty = destiny.getY();
+		// tz = destiny.getZ();
+		// }
+		//
+		// final FlyToLocation flyToLocation = new FlyToLocation(id, x, y, z, tx, ty, tz, FlyType.valueOf(skill.getFlyType()));
+		// broadcastPacket(flyToLocation);
+		//
+		// getPosition().set(tx, ty, tz);
+		//
+		// final int hamstring = (int) calcStat(Stats.HAMSTRING, 0, null, skill);
+		//
+		// if (hamstring > 0 && skill.getFlyType() != "DUMMY")
+		// {
+		// final int distance = (int) Util.calculateDistance(x, y, z, tx, ty);
+		// reduceCurrentHp(hamstring * distance, this, true, true, null, true);
+		// }
+		// }
 		
 		if (broadcastanimation)
 		{
@@ -4690,6 +4689,89 @@ public abstract class Creature extends WorldObject
 	}
 	
 	/**
+	 * Point data structure used for the return of closestPointOnLine Learn More Here: http://ericleong.me/research/circle-circle/
+	 */
+	public class Point
+	{
+		public double x;
+		public double y;
+		
+		Point(double nx, double ny)
+		{
+			this.x = nx;
+			this.y = ny;
+		}
+	}
+	
+	/**
+	 * Projection of the point on the velocity line used for the isInsideMovingRadius function.
+	 * @param vlx Current Pos X
+	 * @param vly Current Pos Y
+	 * @param vlxf Final Pos X (Object Object reference velocity)
+	 * @param vlyf Final Pos Y (Object Object reference velocity)
+	 * @param vlxo Last Pos X
+	 * @param vlyo Last Pos Y
+	 * @return The computed point
+	 */
+	public final Point closestPointOnLine(int vlx, int vly, int vlxf, int vlyf, int vlxo, int vlyo)
+	{
+		int a = vlyf - vly;
+		int b = vlx - vlxf;
+		double c1 = (vlyf - vly) * vlx + (vlx - vlxf) * vly;
+		double c2 = -b * vlxo + a * vlyo;
+		double det = a * a - -b * b;
+		double cx, cy;
+		
+		if (det != 0)
+		{
+			cx = ((a * c1 - b * c2) / det);
+			cy = ((a * c2 - -b * c1) / det);
+		}
+		else
+		{
+			cx = vlxo;
+			cy = vlyo;
+		}
+		return new Point(cx, cy);
+	}
+	
+	/**
+	 * Check if the object was ever able to intersect the radius of the target object. The use of linear algebra and trigonometry allows for an decent approximation test of whether or not the two could ever intersect.
+	 * @param object the target
+	 * @param radius the radius around the target
+	 * @return true if the L2Character was ever inside the radius.
+	 */
+	public final boolean isInsideMovingRadius(WorldObject object, int radius)
+	{
+		// This players last coords
+		int vlx = getLastX();
+		int vly = getLastY();
+		
+		// This players movement vector
+		int vx = getX() - vlx;
+		int vy = getY() - vly;
+		
+		// This players last coords
+		int vlxo = object.getLastX();
+		int vlyo = object.getLastY();
+		
+		// Targets movement vector
+		int vxo = object.getX() - vlxo;
+		int vyo = object.getY() - vlyo;
+		
+		int vecx = vx - vxo;
+		int vecy = vy - vyo;
+		
+		Point d = closestPointOnLine(vlx, vly, vlx + vecx, vly + vecy, vlxo, vlyo);
+		double cDistSq = Math.pow(vlxo - d.x, 2) + Math.pow(vlyo - d.y, 2);
+		if (cDistSq <= Math.pow(radius, 2))
+		{
+			return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * Check if this object is inside the given radius around the given object. Warning: doesn't cover collision radius!
 	 * @param object the target
 	 * @param radius the radius around the target
@@ -4917,7 +4999,7 @@ public abstract class Creature extends WorldObject
 					target.reduceCurrentHp(damage, this, null);
 				}
 			}
-						
+			
 			boolean reflect = Rnd.get(3) == 0;
 			
 			boolean isBow = (getAttackType() == WeaponType.BOW);
@@ -4935,8 +5017,7 @@ public abstract class Creature extends WorldObject
 						if (!target.isRaid() || getActingPlayer() == null || getActingPlayer().getLevel() <= target.getLevel() + 8)
 						{
 							// Calculate reflection damage to reduce HP of attacker if necessary
-							double reflectPercent = (target.getStat().calcStat(Stats.REFLECT_DAMAGE_PERCENT, 0, null, null)
-								- calcStat(Stats.REFLECT_RES, 0, target, null)) * 2;
+							double reflectPercent = (target.getStat().calcStat(Stats.REFLECT_DAMAGE_PERCENT, 0, null, null) - calcStat(Stats.REFLECT_RES, 0, target, null)) * 2;
 							if (reflectPercent > 0)
 							{
 								reflectedDamage = (int) (reflectPercent / 100. * damage);
@@ -7452,8 +7533,10 @@ public abstract class Creature extends WorldObject
 		return getLevel();
 	}
 	
-	/** Only phantom.FakePlayer overrides this: the event code uses it to skip real-player logic (anti-AFK, PvP counters...). 
-	 * @return */
+	/**
+	 * Only phantom.FakePlayer overrides this: the event code uses it to skip real-player logic (anti-AFK, PvP counters...).
+	 * @return
+	 */
 	public boolean isPhantom()
 	{
 		return false;
@@ -7585,7 +7668,7 @@ public abstract class Creature extends WorldObject
 		/**
 		 * Return the L2Character managed by this Accessor AI.<BR>
 		 * <BR>
-		 * @return 
+		 * @return
 		 */
 		public Creature getActor()
 		{
@@ -7595,10 +7678,10 @@ public abstract class Creature extends WorldObject
 		/**
 		 * Accessor to L2Character moveToLocation() method with an interaction area.<BR>
 		 * <BR>
-		 * @param x 
-		 * @param y 
-		 * @param z 
-		 * @param offset 
+		 * @param x
+		 * @param y
+		 * @param z
+		 * @param offset
 		 */
 		public void moveTo(int x, int y, int z, int offset)
 		{
@@ -7608,9 +7691,9 @@ public abstract class Creature extends WorldObject
 		/**
 		 * Accessor to L2Character moveToLocation() method without interaction area.<BR>
 		 * <BR>
-		 * @param x 
-		 * @param y 
-		 * @param z 
+		 * @param x
+		 * @param y
+		 * @param z
 		 */
 		public void moveTo(int x, int y, int z)
 		{
@@ -7620,7 +7703,7 @@ public abstract class Creature extends WorldObject
 		/**
 		 * Accessor to L2Character stopMove() method.<BR>
 		 * <BR>
-		 * @param pos 
+		 * @param pos
 		 */
 		public void stopMove(SpawnLocation pos)
 		{
@@ -7630,7 +7713,7 @@ public abstract class Creature extends WorldObject
 		/**
 		 * Accessor to L2Character doAttack() method.<BR>
 		 * <BR>
-		 * @param target 
+		 * @param target
 		 */
 		public void doAttack(Creature target)
 		{
@@ -7640,7 +7723,7 @@ public abstract class Creature extends WorldObject
 		/**
 		 * Accessor to L2Character doCast() method.<BR>
 		 * <BR>
-		 * @param skill 
+		 * @param skill
 		 */
 		public void doCast(L2Skill skill)
 		{
@@ -7650,8 +7733,8 @@ public abstract class Creature extends WorldObject
 		/**
 		 * Create a NotifyAITask.<BR>
 		 * <BR>
-		 * @param evt 
-		 * @return 
+		 * @param evt
+		 * @return
 		 */
 		public NotifyAITask newNotifyTask(CtrlEvent evt)
 		{

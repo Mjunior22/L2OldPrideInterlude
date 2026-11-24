@@ -305,7 +305,8 @@ public class Inertia implements Runnable
 		final var party = player.getParty();
 		final var assistPlayer = getAssistPlayer();
 		
-		if (assistPlayer != null && !assistPlayer.isSamePartyWith(player))
+		// Assist player left the party or went offline (getOnlinePlayer() == null) : drop the assist so the code below never dereferences null.
+		if (_assistPassport != null && (assistPlayer == null || !assistPlayer.isSamePartyWith(player)))
 			_assistPassport = null;
 		
 		if (party == null || _assistPassport == null)
@@ -340,7 +341,7 @@ public class Inertia implements Runnable
 				_behave.whileTargetDead();
 				return;
 			}
-			else if (currTarget == null || (currTarget == player) || (currTarget == assistPlayer && assistPlayer.isInCombat() || (_searchType == ESearchType.Assist && assistPlayer.getTarget() != currTarget)))
+			else if (currTarget == null || (currTarget == player) || (currTarget == assistPlayer && assistPlayer.isInCombat() || (_searchType == ESearchType.Assist && assistPlayer != null && assistPlayer.getTarget() != currTarget)))
 			{
 				final var newTarget = searchTarget();
 				if (newTarget != null)
@@ -395,7 +396,7 @@ public class Inertia implements Runnable
 		{
 			if (_searchType == ESearchType.Assist)
 			{
-				if (!assistPlayer.isInCombat() || player.getTarget() == assistPlayer)
+				if (assistPlayer != null && (!assistPlayer.isInCombat() || player.getTarget() == assistPlayer))
 				{
 					player.abortAttack();
 					return;

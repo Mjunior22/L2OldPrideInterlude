@@ -74,9 +74,9 @@ public class Resurrect implements ISkillHandler
 		if (targetToRes.isEmpty())
 			return;
 
-		for (WorldObject cha : targets)
+		for (Creature cha : targetToRes)
 		{
-			final Creature target = (Creature) cha;
+			final Creature target = cha;
 			if (activeChar instanceof Player)
 			{
 				if (cha instanceof Player)

@@ -157,6 +157,8 @@ public final class Config
 	public static int ANNOUNCE_ID_EVENT;
 	public static boolean CHAR_TITLE;
 	public static String ADD_CHAR_TITLE;
+	public static boolean NEW_AI_MOVING_ATTACK_CHECK;
+	public static int NEW_AI_MOVING_ATTACK_CHECK_RADIUS;
 	
 	// ----------------------------------------
 	// RaidCustomDrop.properties
@@ -2644,6 +2646,9 @@ public final class Config
 		STRIPE_SMTP_PASSWORD = l2jmega.getProperty("StripeSmtpPassword", "").trim();
 		STRIPE_SMTP_FROM = l2jmega.getProperty("StripeSmtpFrom", "").trim();
 		
+		NEW_AI_MOVING_ATTACK_CHECK = l2jmega.getProperty("NewAIMovingAttackCheck", true);
+		NEW_AI_MOVING_ATTACK_CHECK_RADIUS = l2jmega.getProperty("NewAIMovingAttackCheckRadius", 100);
+		 	
 	}
 	
 	/**

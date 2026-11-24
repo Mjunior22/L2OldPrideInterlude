@@ -32,97 +32,98 @@ public abstract class WorldObject
 		NPC,
 		DEFAULT;
 	}
-
+	
 	public static final Logger _log = Logger.getLogger(WorldObject.class.getName());
-
+	
 	private String _name;
 	private int _objectId;
-
+	
 	private NpcTemplate _polyTemplate;
 	private PolyType _polyType = PolyType.DEFAULT;
 	private int _polyId;
-
+	
+	private SpawnLocation _lastPosition = new SpawnLocation(0, 0, 0, 0);
 	private final SpawnLocation _position = new SpawnLocation(0, 0, 0, 0);
 	private WorldRegion _region;
-
+	
 	private boolean _isVisible;
-
+	
 	/** 0 = normal world. Any other value is a private instance : only objects sharing the same id can see each other. */
 	private int _instanceId = 0;
-
+	
 	public WorldObject(int objectId)
 	{
 		_objectId = objectId;
 	}
-
+	
 	public void onAction(Player player)
 	{
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
-
+	
 	public void onActionShift(Player player)
 	{
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
-
+	
 	public void onForcedAttack(Player player)
 	{
 		player.sendPacket(ActionFailed.STATIC_PACKET);
 	}
-
+	
 	public void onSpawn()
 	{
 	}
-
+	
 	/**
 	 * Remove a WorldObject from the world.
 	 */
 	public void decayMe()
 	{
 		setRegion(null);
-
+		
 		World.getInstance().removeObject(this);
 	}
-
+	
 	public void refreshID()
 	{
 		World.getInstance().removeObject(this);
 		IdFactory.getInstance().releaseId(getObjectId());
 		_objectId = IdFactory.getInstance().getNextId();
 	}
-
+	
 	/**
 	 * Init the position of a WorldObject spawn and add it in the world as a visible object.
 	 */
 	public final void spawnMe()
 	{
 		_isVisible = true;
-
+		
 		setRegion(World.getInstance().getRegion(_position));
-
+		
 		World.getInstance().addObject(this);
-
+		
 		onSpawn();
 	}
-
+	
 	public final void spawnMe(int x, int y, int z)
 	{
 		_position.set(MathUtil.limit(x, World.WORLD_X_MIN + 100, World.WORLD_X_MAX - 100), MathUtil.limit(y, World.WORLD_Y_MIN + 100, World.WORLD_Y_MAX - 100), z);
-
+		
 		spawnMe();
 	}
-
+	
 	public boolean isAttackable()
 	{
 		return false;
 	}
-
+	
 	/**
 	 * @param attacker The target to make checks on.
 	 * @return true or false, depending if the target is attackable or not.
 	 */
 	public abstract boolean isAutoAttackable(Creature attacker);
-
+	
 	/**
 	 * A WorldObject is visible if <B>_isVisible</B> = true and <B>_worldregion</B> != null.
 	 * @return the visibilty state of the WorldObject.
@@ -131,56 +132,56 @@ public abstract class WorldObject
 	{
 		return _region != null && _isVisible;
 	}
-
+	
 	public final void setIsVisible(boolean value)
 	{
 		_isVisible = value;
-
+		
 		if (!_isVisible)
 			setRegion(null);
 	}
-
+	
 	public final String getName()
 	{
 		return _name;
 	}
-
+	
 	public void setName(String value)
 	{
 		_name = value;
 	}
-
+	
 	public final int getObjectId()
 	{
 		return _objectId;
 	}
-
+	
 	public final NpcTemplate getPolyTemplate()
 	{
 		return _polyTemplate;
 	}
-
+	
 	public final PolyType getPolyType()
 	{
 		return _polyType;
 	}
-
+	
 	public final int getPolyId()
 	{
 		return _polyId;
 	}
-
+	
 	public boolean polymorph(PolyType type, int id)
 	{
 		if (!(this instanceof Npc) && !(this instanceof Player))
 			return false;
-
+		
 		if (type == PolyType.NPC)
 		{
 			final NpcTemplate template = NpcTable.getInstance().getTemplate(id);
 			if (template == null)
 				return false;
-
+			
 			_polyTemplate = template;
 		}
 		else if (type == PolyType.ITEM)
@@ -190,31 +191,31 @@ public abstract class WorldObject
 		}
 		else if (type == PolyType.DEFAULT)
 			return false;
-
+		
 		_polyType = type;
 		_polyId = id;
-
+		
 		decayMe();
 		spawnMe();
-
+		
 		return true;
 	}
-
+	
 	public void unpolymorph()
 	{
 		_polyTemplate = null;
 		_polyType = PolyType.DEFAULT;
 		_polyId = 0;
-
+		
 		decayMe();
 		spawnMe();
 	}
-
+	
 	public Player getActingPlayer()
 	{
 		return null;
 	}
-
+	
 	/**
 	 * Sends the Server->Client info packet for the object. Is Overridden in:
 	 * <li>L2BoatInstance</li>
@@ -228,15 +229,15 @@ public abstract class WorldObject
 	 */
 	public void sendInfo(Player activeChar)
 	{
-
+		
 	}
-
+	
 	@Override
 	public String toString()
 	{
 		return (getClass().getSimpleName() + ":" + getName() + "[" + getObjectId() + "]");
 	}
-
+	
 	/**
 	 * Check if the object is in the given zone Id.
 	 * @param zone the zone Id to check
@@ -246,7 +247,7 @@ public abstract class WorldObject
 	{
 		return false;
 	}
-
+	
 	/**
 	 * Set the x,y,z position of the WorldObject and if necessary modify its _worldRegion.
 	 * @param x
@@ -255,16 +256,17 @@ public abstract class WorldObject
 	 */
 	public final void setXYZ(int x, int y, int z)
 	{
+		_lastPosition.set(_position.getX(), _position.getY(), _position.getZ());
 		_position.set(x, y, z);
-
+		
 		if (!isVisible())
 			return;
-
+		
 		final WorldRegion region = World.getInstance().getRegion(_position);
 		if (region != _region)
 			setRegion(region);
 	}
-
+	
 	/**
 	 * Set the x,y,z position of the WorldObject and make it invisible. A WorldObject is invisble if <B>_hidden</B>=true or <B>_worldregion</B>==null
 	 * @param x
@@ -274,40 +276,40 @@ public abstract class WorldObject
 	public final void setXYZInvisible(int x, int y, int z)
 	{
 		_position.set(MathUtil.limit(x, World.WORLD_X_MIN + 100, World.WORLD_X_MAX - 100), MathUtil.limit(y, World.WORLD_Y_MIN + 100, World.WORLD_Y_MAX - 100), z);
-
+		
 		setIsVisible(false);
 	}
-
+	
 	public final void setXYZInvisible(Location loc)
 	{
 		setXYZInvisible(loc.getX(), loc.getY(), loc.getZ());
 	}
-
+	
 	public final int getX()
 	{
 		return _position.getX();
 	}
-
+	
 	public final int getY()
 	{
 		return _position.getY();
 	}
-
+	
 	public final int getZ()
 	{
 		return _position.getZ();
 	}
-
+	
 	public final SpawnLocation getPosition()
 	{
 		return _position;
 	}
-
+	
 	public final WorldRegion getRegion()
 	{
 		return _region;
 	}
-
+	
 	/**
 	 * @return the instance id of this object. 0 means the normal world.
 	 */
@@ -315,7 +317,7 @@ public abstract class WorldObject
 	{
 		return _instanceId;
 	}
-
+	
 	/**
 	 * @param object : The {@link WorldObject} to test.
 	 * @return true if both objects live in the same world (same instance id).
@@ -324,7 +326,7 @@ public abstract class WorldObject
 	{
 		return object != null && object._instanceId == _instanceId;
 	}
-
+	
 	/**
 	 * @return true if this object exists once on the map and must be seen from every instance (ie. doors and static objects). Default is false.
 	 */
@@ -332,7 +334,7 @@ public abstract class WorldObject
 	{
 		return false;
 	}
-
+	
 	/**
 	 * @param object : The other {@link WorldObject}.
 	 * @return true if both objects must know each other : they live in the same instance, or one of them is shared by every instance.
@@ -341,7 +343,7 @@ public abstract class WorldObject
 	{
 		return object._instanceId == _instanceId || object.isInstanceShared() || isInstanceShared();
 	}
-
+	
 	/**
 	 * Move this object to another instance. If the object is currently visible, it is removed from the world and re-added, so every known list (and every client) is refreshed. If it is not visible (ie. during a teleport), only the id changes and the next spawnMe() does the job.
 	 * @param instanceId : 0 for the normal world, or the id of an instance.
@@ -350,20 +352,20 @@ public abstract class WorldObject
 	{
 		if (_instanceId == instanceId)
 			return;
-
+		
 		final WorldRegion region = _region;
 		if (region == null)
 		{
 			_instanceId = instanceId;
 			return;
 		}
-
+		
 		// Visible object : leave the world using the OLD id (so everyone who knew us forgets us), change the id, and come back using the NEW id.
 		setRegion(null);
 		_instanceId = instanceId;
 		setRegion(World.getInstance().getRegion(_position));
 	}
-
+	
 	/**
 	 * Update current and surrounding regions, based on both current region and region setted as parameter.
 	 * @param newRegion : null to remove the object, or the new region.
@@ -371,21 +373,21 @@ public abstract class WorldObject
 	public void setRegion(WorldRegion newRegion)
 	{
 		List<WorldRegion> oldAreas = Collections.emptyList();
-
+		
 		if (_region != null)
 		{
 			_region.removeVisibleObject(this);
 			oldAreas = _region.getSurroundingRegions();
 		}
-
+		
 		List<WorldRegion> newAreas = Collections.emptyList();
-
+		
 		if (newRegion != null)
 		{
 			newRegion.addVisibleObject(this);
 			newAreas = newRegion.getSurroundingRegions();
 		}
-
+		
 		// For every old surrounding area NOT SHARED with new surrounding areas.
 		for (WorldRegion region : oldAreas)
 		{
@@ -396,17 +398,17 @@ public abstract class WorldObject
 				{
 					if (obj == this || !canKnow(obj))
 						continue;
-
+					
 					obj.removeKnownObject(this);
 					removeKnownObject(obj);
 				}
-
+				
 				// Desactivate the old neighbor region.
 				if (this instanceof Player && region.isEmptyNeighborhood())
 					region.setActive(false);
 			}
 		}
-
+		
 		// For every new surrounding area NOT SHARED with old surrounding areas.
 		for (WorldRegion region : newAreas)
 		{
@@ -417,20 +419,20 @@ public abstract class WorldObject
 				{
 					if (obj == this || !canKnow(obj))
 						continue;
-
+					
 					obj.addKnownObject(this);
 					addKnownObject(obj);
 				}
-
+				
 				// Activate the new neighbor region.
 				if (this instanceof Player)
 					region.setActive(true);
 			}
 		}
-
+		
 		_region = newRegion;
 	}
-
+	
 	/**
 	 * Add object to known list.
 	 * @param object : {@link WorldObject} to be added.
@@ -438,7 +440,7 @@ public abstract class WorldObject
 	public void addKnownObject(WorldObject object)
 	{
 	}
-
+	
 	/**
 	 * Remove object from known list.
 	 * @param object : {@link WorldObject} to be removed.
@@ -446,7 +448,7 @@ public abstract class WorldObject
 	public void removeKnownObject(WorldObject object)
 	{
 	}
-
+	
 	/**
 	 * Return the known list of given object type.
 	 * @param <A> : Object type must be instance of {@link WorldObject}.
@@ -459,23 +461,23 @@ public abstract class WorldObject
 		final WorldRegion region = _region;
 		if (region == null)
 			return Collections.emptyList();
-
+		
 		final List<A> result = new ArrayList<>();
-
+		
 		for (WorldRegion reg : region.getSurroundingRegions())
 		{
 			for (WorldObject obj : reg.getObjects())
 			{
 				if (obj == this || !canKnow(obj) || !type.isAssignableFrom(obj.getClass()))
 					continue;
-
+				
 				result.add((A) obj);
 			}
 		}
-
+		
 		return result;
 	}
-
+	
 	/**
 	 * Return the known list of given object type within specified radius.
 	 * @param <A> : Object type must be instance of {@link WorldObject}.
@@ -489,20 +491,20 @@ public abstract class WorldObject
 		final WorldRegion region = _region;
 		if (region == null)
 			return Collections.emptyList();
-
+		
 		final List<A> result = new ArrayList<>();
-
+		
 		for (WorldRegion reg : region.getSurroundingRegions())
 		{
 			for (WorldObject obj : reg.getObjects())
 			{
 				if (obj == this || !canKnow(obj) || !type.isAssignableFrom(obj.getClass()) || !MathUtil.checkIfInRange(radius, this, obj, true))
 					continue;
-
+				
 				result.add((A) obj);
 			}
 		}
-
+		
 		return result;
 	}
 	
@@ -526,5 +528,23 @@ public abstract class WorldObject
 	public double getHpPercent()
 	{
 		return 100;
+	}
+	
+	/**
+	 * @return the last x position of the L2Object.
+	 */
+	public final int getLastX()
+	{
+		return _lastPosition.getX();
+	}
+	
+	public final int getLastY()
+	{
+		return _lastPosition.getY();
+	}
+	
+	public final int getLastZ()
+	{
+		return _lastPosition.getZ();
 	}
 }

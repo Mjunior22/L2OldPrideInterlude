@@ -12865,21 +12865,6 @@ public class Player extends Playable
 	public int _lastY;
 	public int _lastZ;
 	
-	public int getLastX()
-	{
-		return _lastX;
-	}
-	
-	public int getLastY()
-	{
-		return _lastY;
-	}
-	
-	public int getLastZ()
-	{
-		return _lastZ;
-	}
-	
 	public void setLastCords(int x, int y, int z)
 	{
 		_lastX = x;

@@ -138,7 +138,7 @@ public class GenesisDungeon extends Quest
 	private static final int PARTY_RANGE = 1000;
 
 	/** Life time of a dungeon. */
-	private static final int DURATION_MINUTES = 5;
+	private static final int DURATION_MINUTES = 15;
 	/** Time the dungeon stays open once its last player left (a dead player can come back). */
 	private static final int EMPTY_CLOSE_MINUTES = 5;
 	/** Time left once every monster is dead, when they don't respawn. */
