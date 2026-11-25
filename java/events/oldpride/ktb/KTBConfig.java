@@ -43,6 +43,8 @@ public class KTBConfig
 	public static String KTB_NPC_LOC_NAME;
 	public static int KTB_EVENT_PARTICIPATION_NPC_ID;
 	public static int KTB_EVENT_MIN_DAMAGE_TO_OBTAIN_REWARD;
+	public static int KTB_EVENT_PARTICIPANT_REWARD_ID;
+	public static int KTB_EVENT_PARTICIPANT_REWARD_COUNT;
 	public static int[] KTB_EVENT_PARTICIPATION_NPC_COORDINATES = new int[4];
 	public static String KTB_EVENT_BOSS_ID;
 	public static List<Integer> LIST_KTB_EVENT_BOSS_ID;
@@ -80,6 +82,8 @@ public class KTBConfig
 		KTB_NPC_LOC_NAME = events.getProperty("KTBNpcLocName", "Giran Town");
 		KTB_EVENT_PARTICIPATION_NPC_ID = events.getProperty("KTBEventParticipationNpcId", 0);
 		KTB_EVENT_MIN_DAMAGE_TO_OBTAIN_REWARD = events.getProperty("KTBMinDamage", 2000);
+		KTB_EVENT_PARTICIPANT_REWARD_ID = events.getProperty("KTBParticipantRewardId", 0);
+		KTB_EVENT_PARTICIPANT_REWARD_COUNT = events.getProperty("KTBParticipantRewardCount", 1);
 		
 		KTB_EVENT_BOSS_ID = events.getProperty("KTBEventBossListId", "");
 		LIST_KTB_EVENT_BOSS_ID = new ArrayList<>();

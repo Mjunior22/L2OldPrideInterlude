@@ -12,6 +12,9 @@ import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
 
+import events.oldpride.ktb.KTBConfig;
+import phantom.FakePlayer;
+
 import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.data.ItemTable;
 import net.sf.l2j.gameserver.data.manager.CursedWeaponManager;
@@ -20,6 +23,7 @@ import net.sf.l2j.gameserver.model.AbsorbInfo;
 import net.sf.l2j.gameserver.model.AggroInfo;
 import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.RewardInfo;
+import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.WorldObject;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlEvent;
 import net.sf.l2j.gameserver.model.actor.ai.CtrlIntention;
@@ -172,6 +176,14 @@ public class Attackable extends Npc
 			}
 			
 			addDamage(attacker, (int) (damage * damageMulti), skill);
+			
+			// KTB event mob : keep our own damage count (not touched by returnHome / aggro cleaning).
+			if (_isEventKTB && !isDead())
+			{
+				final Player damager = attacker.getActingPlayer();
+				if (damager != null)
+					_eventDamage.merge(damager.getObjectId(), (long) damage, Long::sum);
+			}
 		}
 		
 		// Reduce the current HP of the L2Attackable and launch the doDie Task if necessary
@@ -299,7 +311,27 @@ public class Attackable extends Npc
 		}
 		
 		// Manage Base, Quests and Sweep drops of the L2Attackable.
-		doItemDrop(maxDealer != null && maxDealer.isOnline() ? maxDealer : lastAttacker);
+		// KTB event mob : the drop belongs to the last hitter, as long as he dealt the minimum damage.
+		// Everyone else in the event gets the participation reward (KTBEvent.rewardAllParticipants).
+		if (_isEventKTB)
+		{
+			final int minDamage = KTBConfig.KTB_EVENT_MIN_DAMAGE_TO_OBTAIN_REWARD;
+			Player dropOwner = playera;
+			
+			if (getEventDamage(dropOwner) < minDamage)
+			{
+				dropOwner.sendMessage("You didn't caused min damage to receive the boss drop! Min. Damage: " + minDamage + ". Your Damage: " + getEventDamage(dropOwner));
+				
+				// The last hitter doesn't qualify : the drop goes to the top damager, if he reached the minimum.
+				final Player top = getEventTopDamager();
+				dropOwner = (top != null && getEventDamage(top) >= minDamage) ? top : null;
+			}
+			
+			if (dropOwner != null)
+				doItemDrop(dropOwner);
+		}
+		else
+			doItemDrop(maxDealer != null && maxDealer.isOnline() ? maxDealer : lastAttacker);
 		
 		for (RewardInfo reward : rewards.values())
 		{
@@ -474,6 +506,7 @@ public class Attackable extends Npc
 		
 		// Clear all aggro char from list
 		_aggroList.clear();
+		_eventDamage.clear();
 		
 		// Clear Harvester Reward List
 		_harvestItems.clear();
@@ -1100,8 +1133,8 @@ public class Attackable extends Npc
 		if (player == null)
 			return;
 		
-		// Get the party of the player
-		Party party = player.getParty();
+		// Get the party of the player (the KTB boss drop is never shared with the party : last hitter only)
+		Party party = _isEventKTB ? null : player.getParty();
 		
 		// level modifier in %'s (will be subtracted from drop chance)
 		int levelModifier = calculateLevelModifierForDrop(player);
@@ -1404,6 +1437,48 @@ public class Attackable extends Npc
 	public final Set<Creature> getAttackByList()
 	{
 		return _attackByList;
+	}
+	
+	/**
+	 * Damage dealt to this KTB event mob, by player objectId (summons/pets count for their owner).<br>
+	 * Kept apart from the aggro list on purpose : the aggro list is wiped when the mob returns home, this one is only cleared on death/respawn.
+	 */
+	private final Map<Integer, Long> _eventDamage = new ConcurrentHashMap<>();
+	
+	/**
+	 * @param player : The player to check.
+	 * @return the damage dealt by the player (and its summons/pets) to this KTB event mob.
+	 */
+	public final long getEventDamage(Player player)
+	{
+		return player == null ? 0 : _eventDamage.getOrDefault(player.getObjectId(), 0L);
+	}
+	
+	/**
+	 * @return the online player (phantoms excluded) with the highest damage on this KTB event mob, or null.
+	 */
+	public final Player getEventTopDamager()
+	{
+		Player top = null;
+		long topDamage = 0;
+		for (Map.Entry<Integer, Long> entry : _eventDamage.entrySet())
+		{
+			final Player player = World.getInstance().getPlayer(entry.getKey());
+			if (player == null || player instanceof FakePlayer || !player.isOnline())
+				continue;
+			
+			if (entry.getValue() > topDamage)
+			{
+				topDamage = entry.getValue();
+				top = player;
+			}
+		}
+		return top;
+	}
+	
+	public final void clearEventDamage()
+	{
+		_eventDamage.clear();
 	}
 	
 	public final Map<Creature, AggroInfo> getAggroList()

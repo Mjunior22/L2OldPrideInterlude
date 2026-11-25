@@ -1385,9 +1385,11 @@ public class Npc extends Creature
 		_currentCollisionRadius = getTemplate().getCollisionRadius();
 		DecayTaskManager.getInstance().add(this, getTemplate().getCorpseTime());
 		
-		if (killer instanceof Player)
+		// The killer can be a pet/summon : the credit goes to its owner.
+		if (_isEventKTB && killer != null)
 		{
-			if (_isEventKTB && ((Player) killer).isInKTBEvent())
+			final Player killerPlayer = killer.getActingPlayer();
+			if (killerPlayer != null && killerPlayer.isInKTBEvent())
 				KTBManager.getInstance().raidKilled();
 		}
 		

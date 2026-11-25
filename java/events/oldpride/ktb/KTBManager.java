@@ -119,6 +119,9 @@ public class KTBManager
 	
 	public void raidKilled()
 	{
+		// Everyone in the event gets the participation reward (the boss drop goes to the last hitter). Before stopFight(), which clears the list.
+		KTBEvent.rewardAllParticipants();
+		
 		KTBEvent.sysMsgToAllParticipants("Teleporting back town in " + KTBConfig.KTB_EVENT_START_LEAVE_TELEPORT_DELAY + " second(s).");
 		KTBEvent.stopFight();
 		

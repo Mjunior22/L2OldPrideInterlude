@@ -30,6 +30,7 @@ import net.sf.l2j.gameserver.data.NpcTable;
 import net.sf.l2j.gameserver.data.SpawnTable;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.World;
+import net.sf.l2j.gameserver.model.actor.Attackable;
 import net.sf.l2j.gameserver.model.actor.Npc;
 import net.sf.l2j.gameserver.model.actor.instance.Player;
 import net.sf.l2j.gameserver.model.actor.template.NpcTemplate;
@@ -386,6 +387,44 @@ public class KTBEvent
 		return true;
 	}
 
+	/**
+	 * Gives the participation reward (KTBParticipantRewardId / KTBParticipantRewardCount) to the participants that are online when the boss dies and dealt at least KTBMinDamage to it.<br>
+	 * Damage of the player's summons/pets counts (tracked by Attackable, not wiped when the mob returns home). Phantoms are skipped. Must be called BEFORE {@link #stopFight()}, which clears the participants list and removes the boss.<br>
+	 * The boss drop itself is not handled here : it goes to the last hitter (see Attackable.calculateRewards).
+	 */
+	public static void rewardAllParticipants()
+	{
+		if (KTBConfig.KTB_EVENT_PARTICIPANT_REWARD_ID <= 0 || KTBConfig.KTB_EVENT_PARTICIPANT_REWARD_COUNT <= 0)
+			return;
+		
+		final Npc boss = _lastRaidSpawn;
+		if (!(boss instanceof Attackable))
+			return;
+		
+		// Copy : the map can be changed by players leaving while we iterate.
+		for (KTBPlayer ktbPlayer : new java.util.ArrayList<>(_ktbPlayer.values()))
+		{
+			if (ktbPlayer == null)
+				continue;
+			
+			final Player player = ktbPlayer.getPlayer();
+			if (player == null || player instanceof FakePlayer || !player.isOnline())
+				continue;
+			
+			final long damage = ((Attackable) boss).getEventDamage(player);
+			if (damage >= KTBConfig.KTB_EVENT_MIN_DAMAGE_TO_OBTAIN_REWARD)
+				player.addItem("KTB Participation Reward", KTBConfig.KTB_EVENT_PARTICIPANT_REWARD_ID, KTBConfig.KTB_EVENT_PARTICIPANT_REWARD_COUNT, player, true);
+			else
+			{
+				player.sendPacket(new ExShowScreenMessage("You didn't caused min damage to receive rewards!", 5000));
+				player.sendMessage("You didn't caused min damage to receive rewards! Min. Damage: " + KTBConfig.KTB_EVENT_MIN_DAMAGE_TO_OBTAIN_REWARD + ". Your Damage: " + damage);
+			}
+		}
+		
+		// The mob is dead : only now the damage count is wiped.
+		((Attackable) boss).clearEventDamage();
+	}
+	
 	/**
 	 * Calculates the KTBEvent reward<br>
 	 * 1. If both teams are at a tie(points equals), send it as system message to all participants, if one of the teams have 0 participants left online abort rewarding<br>
