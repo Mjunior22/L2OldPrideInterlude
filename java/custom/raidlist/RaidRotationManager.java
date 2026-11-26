@@ -26,17 +26,17 @@ private static final Logger _log = Logger.getLogger(RaidRotationManager.class.ge
 	// ===== CONFIGURAÇÃO =====
 	private static final int[] BOSS_IDS = 
 	{ 
-		25252,
-		25281,
-		25282,
-		25283,
-		25286,
-		25313,
-		25315,
-		25319,
-		25514,
-		40700,
-		40700 
+		25252, 	// Phalibat
+		25281, 	// Anakim Nemezis
+		25282, 	// Death Lord Shax
+		25283, 	// Lilith
+		25286, 	// Anakim
+		25305, 	// Brakki
+		25315,	// Horus
+		25319, 	// Ember
+		25514, 	// Shyeed
+		40700, 	// Sailren
+		40703	// Tormented Beast
 	};
 	
 	private static final int SPAWN_X = 57720;

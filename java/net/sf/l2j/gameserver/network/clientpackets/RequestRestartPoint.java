@@ -16,6 +16,8 @@ import net.sf.l2j.gameserver.model.entity.Siege;
 import net.sf.l2j.gameserver.model.entity.Siege.SiegeSide;
 import net.sf.l2j.gameserver.model.location.Location;
 import net.sf.l2j.gameserver.model.pledge.Clan;
+import net.sf.l2j.gameserver.model.zone.ZoneId;
+import net.sf.l2j.gameserver.taskmanager.PvpFlagTaskManager;
 
 import events.oldpride.CTF;
 import events.oldpride.DM;
@@ -219,6 +221,7 @@ public final class RequestRestartPoint extends L2GameClientPacket
 				_player.doRevive();
 
 			_player.teleToLocation(loc, 0);
+			fixStuckFlag(_player);
 		}
 	}
 
@@ -266,6 +269,26 @@ public final class RequestRestartPoint extends L2GameClientPacket
 	 * Teleport the {@link Player} to the associated {@link Location}, based on _requestType.
 	 * @param player : The player set as parameter.
 	 */
+	/**
+	 * A PvP flag set without a timer (ex: left behind by a zone while teleporting out of an instance) never expires.<br>
+	 * Once the respawn teleport is done and the zones were revalidated, a flagged player outside Gludin/events/PvP zones that has no flag timer gets a normal one.
+	 * @param player : The respawned {@link Player}.
+	 */
+	private static void fixStuckFlag(Player player)
+	{
+		ThreadPool.schedule(() ->
+		{
+			if (!player.isOnline() || player.isGM() || player.getPvpFlag() == 0)
+				return;
+			
+			if (player.isInGludin() || player.isInFunEvent() || player.isInOlympiadMode() || player.isInsideZone(ZoneId.PVP) || player.isInsideZone(ZoneId.SIEGE))
+				return;
+			
+			if (!PvpFlagTaskManager.getInstance().isTracked(player))
+				PvpFlagTaskManager.getInstance().add(player, Config.PVP_NORMAL_TIME);
+		}, 3000);
+	}
+	
 	private void portPlayer(Player player)
 	{
 		final Clan clan = player.getClan();
@@ -386,5 +409,6 @@ public final class RequestRestartPoint extends L2GameClientPacket
 			player.doRevive();
 
 		player.teleToLocation(loc, 0);
+		fixStuckFlag(player);
 	}
 }

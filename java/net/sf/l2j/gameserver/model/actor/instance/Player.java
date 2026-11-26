@@ -10610,14 +10610,6 @@ public class Player extends Playable
 			return;
 		}
 		
-		if (target instanceof Monster)
-		{
-			if (Config.RAID_BOSS_WANTED.contains(((Monster) target).getNpcId()))
-			{
-				setBossDamage(damage);
-			}
-		}
-		
 		// Check if hit is critical
 		if (pcrit)
 		{
@@ -14808,12 +14800,12 @@ public class Player extends Playable
 	final private int getSupportIncreasePvPChance()
 	{
 		if (isHealerClass())
-			return 15;
+			return 30;
 		
 		if (isTankClass())
-			return 10;
+			return 25;
 		
-		return 7;
+		return 20;
 	}
 	
 	@SuppressWarnings("null")

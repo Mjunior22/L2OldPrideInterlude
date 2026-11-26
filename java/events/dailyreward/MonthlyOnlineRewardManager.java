@@ -166,7 +166,7 @@ public class MonthlyOnlineRewardManager
             {
                 // Recompensa concedida com sucesso
                 player.addItem("MonthlyDailyReward", reward.itemId, reward.amount, player, true);
-                player.addItem("MonthlyDailyReward", 9780, player.isVip() ? 6 : 3, player, true);
+                player.addItem("MonthlyDailyReward", 9780, player.isVip() ? 6 : 5, player, true);
                 player.sendMessage("You have received the reward of the day " + today + ": " + 
                 ItemTable.getInstance().getTemplate(reward.itemId).getName() + " x" + reward.amount);
                 

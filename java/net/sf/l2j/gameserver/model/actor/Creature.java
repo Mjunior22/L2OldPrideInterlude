@@ -15,6 +15,7 @@ import net.sf.l2j.commons.math.MathUtil;
 import net.sf.l2j.commons.random.Rnd;
 
 import net.sf.l2j.Config;
+import net.sf.l2j.gameserver.taskmanager.PvpFlagTaskManager;
 import net.sf.l2j.gameserver.data.SkillTable;
 import net.sf.l2j.gameserver.data.SkillTable.FrequentSkill;
 import net.sf.l2j.gameserver.data.xml.MapRegionData;
@@ -317,17 +318,21 @@ public abstract class Creature extends WorldObject
 			_zones[zone.getId()]++;
 		else
 		{
+			// Was the creature really counted inside this zone ? Some zones (ex: siege) call setInsideZone(false) on exit even if they never set it.
+			final boolean wasInside = _zones[zone.getId()] > 0;
+			
 			_zones[zone.getId()]--;
 			if (_zones[zone.getId()] < 0)
 				_zones[zone.getId()] = 0;
 			
-			if (zone == ZoneId.PVP && this instanceof Player)
+			// Leaving a PvP zone flags the player, but ONLY if he was inside it and ALWAYS with a timer : a flag without timer never expires.
+			if (zone == ZoneId.PVP && wasInside && this instanceof Player && !isGM())
 			{
-				if (!isGM())
-				{
-					if (((Player) this).getPvpFlag() == 0)
-						((Player) this).updatePvPFlag(1);
-				}
+				final Player player = (Player) this;
+				PvpFlagTaskManager.getInstance().add(player, Config.PVP_NORMAL_TIME);
+				
+				if (player.getPvpFlag() == 0)
+					player.updatePvPFlag(1);
 			}
 		}
 	}

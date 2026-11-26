@@ -1,7 +1,11 @@
 package net.sf.l2j.gameserver.model.actor.instance;
 
-import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import net.sf.l2j.commons.concurrent.ThreadPool;
 import net.sf.l2j.commons.random.Rnd;
@@ -10,6 +14,7 @@ import net.sf.l2j.Config;
 import net.sf.l2j.gameserver.instancemanager.RaidBossPointsManager;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager;
 import net.sf.l2j.gameserver.instancemanager.RaidBossSpawnManager.StatusEnum;
+import net.sf.l2j.gameserver.model.L2Skill;
 import net.sf.l2j.gameserver.model.L2Spawn;
 import net.sf.l2j.gameserver.model.World;
 import net.sf.l2j.gameserver.model.actor.Creature;
@@ -30,6 +35,8 @@ import events.dailytasks.DailyTaskManager;
  */
 public class RaidBoss extends Monster
 {
+	private static final Logger _log = Logger.getLogger(RaidBoss.class.getName());
+	
 	private StatusEnum _raidStatus;
 	private ScheduledFuture<?> _maintenanceTask;
 
@@ -53,6 +60,7 @@ public class RaidBoss extends Monster
 	public void onSpawn()
 	{
 		setIsNoRndWalk(true);
+		_damageByPlayer.clear();
 		super.onSpawn();
 	}
 
@@ -70,15 +78,25 @@ public class RaidBoss extends Monster
 			_maintenanceTask = null;
 		}
 
+		// Custom chests : must never prevent the rest of doDie (points, respawn status...) from running.
+		if (Config.RAID_BOSS_WANTED.contains(getNpcId()))
+		{
+			try
+			{
+				distributeRewards(killer == null ? null : killer.getActingPlayer());
+			}
+			catch (Exception e)
+			{
+				_log.log(Level.SEVERE, "Boss rewards failed for " + getName() + " : " + e.getMessage(), e);
+			}
+		}
+		
 		if (killer != null)
 		{
 			final Player player = killer.getActingPlayer();
 			
 			if (player != null)
 			{
-				if (Config.RAID_BOSS_WANTED.contains(getNpcId()))
-					setCustomRewards(player);
-				
 				String clan = "";
                 if (player.getClan() != null)
                     clan = " of clan " + player.getClan().getName();
@@ -161,24 +179,6 @@ public class RaidBoss extends Monster
 		_raidStatus = status;
 	}
 	
-	public final static Player getMainDamageDealer()
-	{
-		long dmg = 0;
-		Player mainDamageDealer = null;
-		
-		Collection<Player> ppl = World.getInstance().getPlayers();
-		
-		for (Player p : ppl)
-		{
-			if (p.getBossDamage() > dmg)
-			{
-				dmg = p.getBossDamage();
-				mainDamageDealer = p;
-			}
-		}
-		return mainDamageDealer;
-	}
-	
 	private Player lastAttacker = null;
 	
 	/**
@@ -197,132 +197,165 @@ public class RaidBoss extends Monster
 		this.lastAttacker = lastAttacker;
 	}
 	
-	private void setCustomRewards(Player player)
+	/**
+	 * Damage dealt to this boss during the current fight, by player objectId (pets, summons and cubics count for their owner).<br>
+	 * It lives in the boss : every fight starts at zero and nothing leaks from one boss to another.
+	 */
+	private final Map<Integer, Long> _damageByPlayer = new ConcurrentHashMap<>();
+	
+	// Players farther than this from the boss when it dies don't receive the chests given because of a party.
+	private static final int REWARD_RANGE = 3000;
+	
+	@Override
+	public void reduceCurrentHp(double damage, Creature attacker, boolean awake, boolean isDOT, L2Skill skill)
 	{
-		if (player.getBossDamage() > (player._inEventKTB ? 1000 : Config.MIN_DAMAGE_FOR_BOSS_REWARD))
+		if (attacker != null && damage > 0 && !isDead() && Config.RAID_BOSS_WANTED.contains(getNpcId()))
 		{
-			final Party party = player.getParty();
-			if (party != null)
-			{
-				for (Player member : party.getMembers())
-				{
-					if (member._inEventKTB)
-					{
-						member.AddLastHitEventReward();
-						MagicSkillUse MSU = new MagicSkillUse(player, player, 2025, 1, 1, 0);
-						player.broadcastPacket(MSU);
-					}
-					else
-					{
-						member.AddLastHitReward();
-						MagicSkillUse MSU = new MagicSkillUse(player, player, 2025, 1, 1, 0);
-						player.broadcastPacket(MSU);
-					}
-				}
-			}
-			else
-			{
-				if (player._inEventKTB)
-				{
-					player.AddLastHitEventReward();
-					MagicSkillUse MSU = new MagicSkillUse(player, player, 2025, 1, 1, 0);
-					player.broadcastPacket(MSU);
-				}
-				else
-				{
-					player.AddLastHitReward();
-					MagicSkillUse MSU = new MagicSkillUse(player, player, 2025, 1, 1, 0);
-					player.broadcastPacket(MSU);
-				}
-			}
-		}
-		else
-			player.sendMessage("You didn't caused min damage to receive rewards! Min. Damage: " + (player._inEventKTB ? 1000 : Config.MIN_DAMAGE_FOR_BOSS_REWARD) + ". Your Damage: " + player.getBossDamage());
-		
-		if (player.getBossDamage() < (player._inEventKTB ? 1000 : Config.MIN_DAMAGE_FOR_BOSS_REWARD) && getMainDamageDealer() != null)
-		{
-			final Party party = getMainDamageDealer().getParty();
-			if (party != null)
-			{
-				for (Player member : party.getMembers())
-				{
-					if (member._inEventKTB)
-					{
-						member.AddLastHitEventReward();
-						member.AddGreaterDamageEventReward();
-					}
-					else
-					{
-						member.AddLastHitReward();
-						member.AddGreaterDamageReward();
-					}
-				}
-			}
-			else
-			{
-				getMainDamageDealer().AddLastHitReward();
-				getMainDamageDealer().AddGreaterDamageReward();
-			}
-			Broadcast.announceToOnlinePlayers(getName() + " was crushed by " + getMainDamageDealer().getName());
-			MagicSkillUse MSU = new MagicSkillUse(getMainDamageDealer(), getMainDamageDealer(), 2025, 1, 1, 0);
-			getMainDamageDealer().broadcastPacket(MSU);
+			final Player damager = attacker.getActingPlayer();
+			if (damager != null)
+				_damageByPlayer.merge(damager.getObjectId(), (long) Math.min(damage, getCurrentHp()), Long::sum);
 		}
 		
-		if (getMainDamageDealer() != null && player.getBossDamage() > (player._inEventKTB ? 1000 : Config.MIN_DAMAGE_FOR_BOSS_REWARD))
+		super.reduceCurrentHp(damage, attacker, awake, isDOT, skill);
+	}
+	
+	/**
+	 * Custom boss chests. Each player receives ONE chest, the highest he is entitled to :
+	 * <ul>
+	 * <li>3 (last hit) : the last hitter and his party. If the last hitter didn't reach the minimum damage, it goes to the top damage dealer and his party.</li>
+	 * <li>2 (greater damage) : the top damage dealer and his party.</li>
+	 * <li>1 (general) : everyone that dealt the minimum damage (the healers of their parties too).</li>
+	 * </ul>
+	 * @param lastHitter : The {@link Player} that gave the last hit (can be null).
+	 */
+	private void distributeRewards(Player lastHitter)
+	{
+		final long min = Config.MIN_DAMAGE_FOR_BOSS_REWARD;
+		
+		// Online participants and their damage. The fight is over : the counters are wiped now.
+		final Map<Player, Long> participants = new HashMap<>();
+		for (Map.Entry<Integer, Long> entry : _damageByPlayer.entrySet())
 		{
-			final Party party = getMainDamageDealer().getParty();
-			if (party != null)
+			final Player p = World.getInstance().getPlayer(entry.getKey());
+			if (p != null && p.isOnline())
+				participants.put(p, entry.getValue());
+		}
+		_damageByPlayer.clear();
+		
+		// Top damage dealer.
+		Player topDealer = null;
+		long topDamage = 0;
+		for (Map.Entry<Player, Long> entry : participants.entrySet())
+		{
+			if (entry.getValue() > topDamage)
 			{
-				for (Player member : party.getMembers())
-				{
-					member.AddGreaterDamageReward();
-				}
+				topDamage = entry.getValue();
+				topDealer = entry.getKey();
 			}
-			else
-				getMainDamageDealer().AddGreaterDamageReward();
+		}
+		
+		final Player greaterOwner = (topDealer != null && topDamage >= min) ? topDealer : null;
+		
+		// Last hit : the last hitter if he reached the minimum, otherwise it passes to the top damage dealer.
+		final boolean lastHitQualifies = lastHitter != null && participants.getOrDefault(lastHitter, 0L) >= min;
+		final Player lastHitOwner = lastHitQualifies ? lastHitter : greaterOwner;
+		
+		// Highest chest of each player : 3 last hit, 2 greater damage, 1 general.
+		final Map<Player, Integer> chests = new HashMap<>();
+		
+		for (Map.Entry<Player, Long> entry : participants.entrySet())
+		{
+			final Player p = entry.getKey();
+			if (entry.getValue() < min || !p.isInsideRadius(this, REWARD_RANGE, false, false))
+				continue;
 			
-			Broadcast.announceToOnlinePlayers(getName() + " was crushed by " + getMainDamageDealer().getName());
-			MagicSkillUse MSU = new MagicSkillUse(getMainDamageDealer(), getMainDamageDealer(), 2025, 1, 1, 0);
-			getMainDamageDealer().broadcastPacket(MSU);
+			chests.merge(p, 1, Math::max);
+			
+			// The healers of his party get the general chest too (once, no matter how many members qualify).
+			final Party party = p.getParty();
+			if (party != null)
+			{
+				for (Player member : party.getMembers())
+				{
+					if (member.isHealerClass() && member.isOnline() && member.isInsideRadius(this, REWARD_RANGE, false, false))
+						chests.merge(member, 1, Math::max);
+				}
+			}
 		}
 		
-		Collection<Player> ppl = World.getInstance().getPlayers();
-		for (Player p : ppl)
+		grantToGroup(chests, greaterOwner, 2);
+		grantToGroup(chests, lastHitOwner, 3);
+		
+		// Deliver : ONE chest per player.
+		for (Map.Entry<Player, Integer> entry : chests.entrySet())
 		{
-			if (p.isInsideRadius(this, 3000, false, false))
-            {
-				if (!p.isHealerClass())
-				{
-					if (p.getBossDamage() > (player._inEventKTB ? 1000 : Config.MIN_DAMAGE_FOR_BOSS_REWARD))
-					{
-						final Party party = p.getParty();
-						if (party != null)
-						{
-							for (Player member : party.getMembers())
-							{
-								if (member.isHealerClass())
-								{
-									if (member._inEventKTB)
-										member.AddGeneralEventReward();
-									else
-										member.AddGeneralReward();
-								}
-							}
-						}
-						
-						if(p._inEventKTB)
-							p.AddGeneralEventReward();
-						else
-							p.AddGeneralReward();
-						
-						if (p.getClan() != null)
-							p.getClan().addReputationScore(Rnd.get(25, 50));
-					}
-					else
-						p.sendMessage("You didn't caused min damage to receive rewards! Min. Damage: " + (player._inEventKTB ? 1000 : Config.MIN_DAMAGE_FOR_BOSS_REWARD) + ". Your Damage: " + p.getBossDamage());
-				}
-            }
-			p.setBossDamage(0);
+			final Player p = entry.getKey();
+			switch (entry.getValue())
+			{
+				case 3:
+					p.AddLastHitReward();
+					break;
+				
+				case 2:
+					p.AddGreaterDamageReward();
+					break;
+				
+				default:
+					p.AddGeneralReward();
+					break;
+			}
+		}
+		
+		// Clan reputation and "min damage" warning, only for those that were around when the boss died.
+		for (Map.Entry<Player, Long> entry : participants.entrySet())
+		{
+			final Player p = entry.getKey();
+			if (!p.isInsideRadius(this, REWARD_RANGE, false, false))
+				continue;
+			
+			if (entry.getValue() >= min)
+			{
+				if (!p.isHealerClass() && p.getClan() != null)
+					p.getClan().addReputationScore(Rnd.get(25, 50));
+			}
+			else if (!chests.containsKey(p))
+				p.sendMessage("You didn't caused min damage to receive rewards! Min. Damage: " + min + ". Your Damage: " + entry.getValue());
+		}
+		
+		// Effects and announce.
+		if (lastHitOwner != null)
+			lastHitOwner.broadcastPacket(new MagicSkillUse(lastHitOwner, lastHitOwner, 2025, 1, 1, 0));
+		
+		if (greaterOwner != null)
+		{
+			if (greaterOwner != lastHitOwner)
+				greaterOwner.broadcastPacket(new MagicSkillUse(greaterOwner, greaterOwner, 2025, 1, 1, 0));
+			
+			Broadcast.announceToOnlinePlayers(getName() + " was crushed by " + greaterOwner.getName());
+		}
+	}
+	
+	/**
+	 * Gives the chest to the owner and to the members of his party that are online and close to the boss. A player keeps only his highest chest.
+	 * @param chests : The chest of each player.
+	 * @param owner : The {@link Player} that earned the chest (can be null).
+	 * @param chest : The chest tier.
+	 */
+	private void grantToGroup(Map<Player, Integer> chests, Player owner, int chest)
+	{
+		if (owner == null)
+			return;
+		
+		chests.merge(owner, chest, Math::max);
+		
+		final Party party = owner.getParty();
+		if (party == null)
+			return;
+		
+		for (Player member : party.getMembers())
+		{
+			if (member != owner && member.isOnline() && member.isInsideRadius(this, REWARD_RANGE, false, false))
+				chests.merge(member, chest, Math::max);
 		}
 	}
 }

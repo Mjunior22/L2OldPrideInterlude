@@ -192,7 +192,7 @@ public class ElvenRuinsDungeon extends Quest
 		}
 	}
 	
-	private static final int MIN_PVP = 500;
+	private static final int MIN_PVP = 200;
 	private static final int MIN_LEVEL = 84;
 	private static final int MAX_LEVEL = 91;
 	/** 1 = a lonely player can enter. */

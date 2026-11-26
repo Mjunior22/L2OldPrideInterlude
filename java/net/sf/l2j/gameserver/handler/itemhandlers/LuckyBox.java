@@ -56,7 +56,7 @@ public class LuckyBox implements IItemHandler
 				{
 					activeChar.addItem("item", 6320, 4, activeChar, true);
 					activeChar.addItem("item", 9706, 3, activeChar, true);
-					activeChar.addItem("item", 9780, 2, activeChar, true);
+					activeChar.addItem("item", 9780, 3, activeChar, true);
 				}
 				MagicSkillUse MSU = new MagicSkillUse(activeChar, activeChar, 2024, 1, 1, 0);
 				activeChar.broadcastPacket(MSU);
@@ -75,7 +75,7 @@ public class LuckyBox implements IItemHandler
 				{
 					activeChar.addItem("item", 6320, 3, activeChar, true);
 					activeChar.addItem("item", 9706, 3, activeChar, true);
-					activeChar.addItem("item", 9780, 1, activeChar, true);
+					activeChar.addItem("item", 9780, 2, activeChar, true);
 				}
 				MagicSkillUse MSU = new MagicSkillUse(activeChar, activeChar, 2024, 1, 1, 0);
 				activeChar.broadcastPacket(MSU);
@@ -87,14 +87,14 @@ public class LuckyBox implements IItemHandler
 				if (activeChar.isVip())
 				{
 					activeChar.addItem("item", 6320, Rnd.get(2, 3), activeChar, true);
-					activeChar.addItem("item", 9706, 2, activeChar, true);
-					activeChar.addItem("item", 9780, Rnd.get(1, 2), activeChar, true);
+					activeChar.addItem("item", 9706, Rnd.get(2, 3), activeChar, true);
+					activeChar.addItem("item", 9780, 2, activeChar, true);
 				}
 				else
 				{
 					activeChar.addItem("item", 6320, Rnd.get(1, 2), activeChar, true);
-					activeChar.addItem("item", 9706, 1, activeChar, true);
-					activeChar.addItem("item", 9780, 1, activeChar, true);
+					activeChar.addItem("item", 9706, Rnd.get(1, 2), activeChar, true);
+					activeChar.addItem("item", 9780, 2, activeChar, true);
 				}
 				MagicSkillUse MSU = new MagicSkillUse(activeChar, activeChar, 2024, 1, 1, 0);
 				activeChar.broadcastPacket(MSU);

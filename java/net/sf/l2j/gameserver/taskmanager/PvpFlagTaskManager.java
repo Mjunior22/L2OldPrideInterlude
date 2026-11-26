@@ -37,6 +37,15 @@ public final class PvpFlagTaskManager implements Runnable
 	}
 
 	/**
+	 * @param player : The {@link Player} to check.
+	 * @return true if the {@link Player} has a running PvP flag timer.
+	 */
+	public final boolean isTracked(Player player)
+	{
+		return _players.containsKey(player);
+	}
+	
+	/**
 	 * Removes {@link Player} from the PvpFlagTask.
 	 * @param player : {@link Player} to be removed.
 	 */

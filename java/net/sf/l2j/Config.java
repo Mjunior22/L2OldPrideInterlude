@@ -3234,12 +3234,12 @@ public final class Config
 		}
 		
 		MIN_DAMAGE_FOR_BOSS_REWARD = customBoss.getProperty("BossesMinDamage", 20000);
-		GENERAL_BOSS_REWARD = customBoss.getProperty("BossesGeneralReward", 2);
-		LAST_HIT_BOSS_REWARD = customBoss.getProperty("BossesLastHitReward", 2);
-		GREATER_DAMAGE_BOSS_REWARD = customBoss.getProperty("BossesGreaterDamageReward", 2);
-		GENERAL_BOSS_EVENT_REWARD = customBoss.getProperty("BossesGeneralEventReward", 2);
-		LAST_HIT_BOSS_EVENT_REWARD = customBoss.getProperty("BossesLastHitEventReward", 2);
-		GREATER_DAMAGE_BOSS_EVENT_REWARD = customBoss.getProperty("BossesGreaterDamageEventReward", 2);
+		GENERAL_BOSS_REWARD = customBoss.getProperty("BossesGeneralReward", 9710);
+		LAST_HIT_BOSS_REWARD = customBoss.getProperty("BossesLastHitReward", 9712);
+		GREATER_DAMAGE_BOSS_REWARD = customBoss.getProperty("BossesGreaterDamageReward", 9711);
+		GENERAL_BOSS_EVENT_REWARD = customBoss.getProperty("BossesGeneralEventReward", 9710);
+		LAST_HIT_BOSS_EVENT_REWARD = customBoss.getProperty("BossesLastHitEventReward", 9712);
+		GREATER_DAMAGE_BOSS_EVENT_REWARD = customBoss.getProperty("BossesGreaterDamageEventReward", 9711);
 	}
 	
 	public static final void loadGameServer()
